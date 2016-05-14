@@ -107,7 +107,7 @@ end
 
 h=nplot('solution corner c1');
 
-BTC_plot_solution(icr,picr,palist(1:100));
+BTC_plot_solution(icr,picr,palist(1:1000));
 
 
 

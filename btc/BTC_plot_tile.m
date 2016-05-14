@@ -1,4 +1,4 @@
-function BTC_plot_solution(tiles,parent)
+function BTC_plot_tile(tiles,parent)
 h = gcf;
 hold all;
 set(h,'visible','off')
@@ -16,8 +16,8 @@ end
 
 recx = [0.1 0.9 0.9 0.1]; recy=[0.1 0.1 0.9 0.9];
 
-dx = 0;%mod(d-1,m);
-dy = 0;%floor((d-1)/m);
+dx = mod(d-1,m);
+dy = floor((d-1)/m);
 [y,x]=find(tiles(:,:,d));
 
 Rx = repmat(recx,numel(x),1)'; Ry = repmat(recy,numel(x),1)';
