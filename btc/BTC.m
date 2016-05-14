@@ -34,7 +34,7 @@ sel=(pic > 0 );
 BTC_plot_tile(icr,picr);
 numel(picr) 
 %% select corner 1
-mask = zeros(8,8);mask(1:3,1:3)=1;
+mask = zeros(8,8);mask(1:2,1:2)=1;
 mask = repmat(mask,1,1,size(icr,3));
 match = icr & mask;
 match = any(any(match));
@@ -42,3 +42,4 @@ sel = match(:);
 h=nplot('icons, corner');
 BTC_plot_tile(icr(:,:,sel),picr(sel));
 numel(picr(sel))    
+%%
