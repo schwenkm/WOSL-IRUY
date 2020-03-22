@@ -7,10 +7,20 @@ dwn_filename = websave(dwn_filename,url);
 A       = readtable(dwn_filename);
 ti      = datetime(A{1,5:end},'InputFormat','MM/dd/yy');
 cntry   = A{2:end,2};
+state   = A{2:end,1};
 cases   = str2double(A{2:end,5:end});
-
+%% collect US
+newidx = numel(cntry) +1;
+collectCntry = 'US';
+cntry{newidx} = [collectCntry ' total'];
+cases(newidx,:) = 0;
+icoll = find(strcmp(cntry,collectCntry));
+for pp = icoll'
+    cases(newidx,:) = cases(newidx,:) + cases(pp,:);
+end
 %%
-CList ={'Germany','France','Italy','China','Spain','Norway','Sweden','Korea, South'};
+CList ={'Germany','France','Italy','China','Spain','Norway','Sweden','Korea, South','US total'};
+%CList ={'US total'};
 %CList ={'Germany','Italy','China'};
 
 figure(1), hold off
