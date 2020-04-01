@@ -1,6 +1,8 @@
 %%
-url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv';
-dwn_filename = 'd:\temp\websave\c.csv';
+%previous url: url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv';
+url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv';
+
+dwn_filename = 'c:\temp\websave\c.csv';
 dwn_filename = websave(dwn_filename,url);
 
 %%
@@ -12,14 +14,27 @@ cases   = str2double(A{2:end,5:end});
 %% collect US
 newidx = numel(cntry) +1;
 collectCntry = 'US';
+icoll = find(strcmp(cntry,collectCntry));
 cntry{newidx} = [collectCntry ' total'];
 cases(newidx,:) = 0;
+for pp = icoll'     cases(newidx,:) = cases(newidx,:) + cases(pp,:); end
+%% collect France
+newidx = numel(cntry) +1;
+collectCntry = 'France';
 icoll = find(strcmp(cntry,collectCntry));
-for pp = icoll'
-    cases(newidx,:) = cases(newidx,:) + cases(pp,:);
-end
+cntry{newidx} = [collectCntry ' total'];
+cases(newidx,:) = 0;
+for pp = icoll'     cases(newidx,:) = cases(newidx,:) + cases(pp,:); end
+%% collect China
+newidx = numel(cntry) +1;
+collectCntry = 'China';
+icoll = find(strcmp(cntry,collectCntry));
+cntry{newidx} = [collectCntry ' total'];
+cases(newidx,:) = 0;
+for pp = icoll'     cases(newidx,:) = cases(newidx,:) + cases(pp,:); end
+
 %%
-CList ={'Germany','France','Italy','China','Spain','Norway','Sweden','Korea, South','US total'};
+CList ={'Germany','France total','Italy','China total','Spain','Norway','Sweden','Korea, South','US total'};
 %CList ={'US total'};
 %CList ={'Germany','Italy','China'};
 
@@ -39,7 +54,7 @@ xlabel('date')
 ylabel('confirmed cases')
 
 %%
-alignat = 100;
+alignat = 1000;
 aligncntry ={'Italy'};
 ial = find(strcmp(cntry,aligncntry),1);
 
@@ -70,6 +85,26 @@ set(gca,'YScale','log')
 xlabel('days')
 ylabel('confirmed cases')
 xtickformat('d')
+%%
+CList ={'Germany','France total','Italy','China total','Spain','US total'};
+
+daily_new = diff(cases,1,2);
+figure(3), hold off
+cnt = 0;Legend=[];
+for pp = 1:numel(CList)
+    cnt = cnt+1;
+    i1 = find(strcmp(cntry,CList{pp}),1);
+    plot(cases(i1,2:end),daily_new(i1,:),'.-');
+    Legend{cnt}=cntry{i1};
+    grid on
+    hold all
+end
+
+legend(Legend,'Location','NorthWest');
+set(gca,'YScale','log')
+set(gca,'XScale','log')
+ylabel('new cases')
+xlabel('confirmed cases')
 
 
 
