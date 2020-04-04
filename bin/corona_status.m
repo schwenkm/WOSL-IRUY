@@ -205,9 +205,5 @@ IrfanView(png_file)
 %% Copy dependencies
 if 0
    %%
-   dest='C:\AAA\Git\Github_Schlack_WOSL-IRUY\bin'
-   fList = matlab.codetools.requiredFilesAndProducts('corona_status.m')
-   for i=1:numel(fList)
-      copyfile(fList{i}, dest)
-   end
+   
 end
