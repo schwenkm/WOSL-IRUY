@@ -19,12 +19,6 @@ do_mav  = 2*do_diff + 2*url_idx - 1;
 %%
 if ~exist('dwn_url','var') || ~isequal(dwn_url, url) || ~isequal(dwn_date,date)
    dwn_filename = 'c:\temp\websave\corona_stat.csv';
-   if ~exist(fileparts(dwn_filename),'dir')
-      mkdir(fileparts(dwn_filename))
-   end
-   if ~exist('ntitle','file')
-      addpath(fullfile(fileparts(which(mfilename)),'..','bin'))
-   end
    options = weboptions;
    options.Timeout = 13;
    dwn_filename = websave(dwn_filename,url,options);
@@ -172,18 +166,13 @@ if ~do_diff
 else
    ttt=datetime(ti(end), 'Format', 'd. MMMM'); xx2=(xxx(2)-ttt);
    xlabel(sprintf('%d Tage vor dem %s und %d Tage danach', days(xx1), ttt, days(xx2)))
-end
-img_dir='Bilder';
-if ~exist(img_dir,'dir')
-   mkdir(img_dir)
-end
-
-screenprint(fullfile(img_dir,[fname '_full']),gcf,100)
+end   
+screenprint([fname '_full'],gcf,100)
 disp(['Save As ' fname '_full.png'])
 if isempty(png_file)
    png_file=[fname '_full.png'];
 end
-%IrfanView(fullfile(img_dir,[fname '_full.png']))
+%IrfanView([fname '_full.png'])
 
 if ~do_diff
    idx=idx+1;
@@ -197,10 +186,10 @@ if ~do_diff
         xlabel(sprintf('vergangene %d Tage, und projizierte %d Tage', days(xx1), 10));
    end
    t3.String='(Ausschnitt-Darstellung)';
-   screenprint(fullfile(img_dir,[fname '_zoom']),gcf,100)
+   screenprint([fname '_zoom'],gcf,100)
    disp(['Save As ' fname '_zoom.png'])
    %pause
-   %IrfanView(fullfile(img_dir,[fname '_zoom.png']))
+   %IrfanView([fname '_zoom.png'])
 end
 
 set(gca,'xlimmode','auto')
@@ -211,14 +200,10 @@ xlabel('')
 end
 end
 %%
-IrfanView(fullfile(img_dir,png_file))
+IrfanView(png_file)
 
 %% Copy dependencies
 if 0
    %%
-   dest='C:\AAA\Git\Github_Schlack_WOSL-IRUY\bin'
-   fList = matlab.codetools.requiredFilesAndProducts('corona_status.m')
-   for i=1:numel(fList)
-      copyfile(fList{i}, dest)
-   end
+   
 end
