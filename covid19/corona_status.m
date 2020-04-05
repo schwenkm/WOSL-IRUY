@@ -23,7 +23,7 @@ if ~exist('dwn_url','var') || ~isequal(dwn_url, url) || ~isequal(dwn_date,date)
       mkdir(fileparts(dwn_filename))
    end
    if ~exist('ntitle','file')
-      addpath('../bin')
+      addpath(fullfile(fileparts(which(mfilename)),'..','bin'))
    end
    options = weboptions;
    options.Timeout = 13;
@@ -172,13 +172,18 @@ if ~do_diff
 else
    ttt=datetime(ti(end), 'Format', 'd. MMMM'); xx2=(xxx(2)-ttt);
    xlabel(sprintf('%d Tage vor dem %s und %d Tage danach', days(xx1), ttt, days(xx2)))
-end   
-screenprint([fname '_full'],gcf,100)
+end
+img_dir='Bilder';
+if ~exist(img_dir,'dir')
+   mkdir(img_dir)
+end
+
+screenprint(fullfile(img_dir,[fname '_full']),gcf,100)
 disp(['Save As ' fname '_full.png'])
 if isempty(png_file)
    png_file=[fname '_full.png'];
 end
-%IrfanView([fname '_full.png'])
+%IrfanView(fullfile(img_dir,[fname '_full.png']))
 
 if ~do_diff
    idx=idx+1;
@@ -192,10 +197,10 @@ if ~do_diff
         xlabel(sprintf('vergangene %d Tage, und projizierte %d Tage', days(xx1), 10));
    end
    t3.String='(Ausschnitt-Darstellung)';
-   screenprint([fname '_zoom'],gcf,100)
+   screenprint(fullfile(img_dir,[fname '_zoom']),gcf,100)
    disp(['Save As ' fname '_zoom.png'])
    %pause
-   %IrfanView([fname '_zoom.png'])
+   %IrfanView(fullfile(img_dir,[fname '_zoom.png']))
 end
 
 set(gca,'xlimmode','auto')
@@ -206,7 +211,7 @@ xlabel('')
 end
 end
 %%
-IrfanView(png_file)
+IrfanView(fullfile(img_dir,png_file))
 
 %% Copy dependencies
 if 0

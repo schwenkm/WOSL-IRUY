@@ -13,7 +13,7 @@ function IrfanView(varargin)
 % (C) Philips - created by Andreas Schlack April 2009
 
 for i=1:nargin
-   arg = strrep(varargin{i},'/','\'); % i_view64 expects backslashes and no slashes in filenames
+   arg = strrep(varargin{i},'\','/'); % bash expects slashes and no backslashes in arguments
    if ~isempty(dir(arg))
       varargin{i} = arg;
    else
