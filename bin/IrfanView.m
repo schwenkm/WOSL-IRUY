@@ -23,8 +23,10 @@ for i=1:nargin
 end
 
 i_view_path = {
-   'C:\Program Files\IrfanView', ...
-   'C:\Program Files (x86)\IrfanView'};
+   'C:\Program Files\IrfanView'
+   'C:\Program Files (x86)\IrfanView'
+   'D:\BBB (x64)\IrfanView'
+   };
 i_view_exe = {'i_view32.exe', 'i_view64.exe'};
 
 for exe_idx=1:numel(i_view_exe)
