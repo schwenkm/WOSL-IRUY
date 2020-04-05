@@ -19,6 +19,12 @@ do_mav  = 2*do_diff + 2*url_idx - 1;
 %%
 if ~exist('dwn_url','var') || ~isequal(dwn_url, url) || ~isequal(dwn_date,date)
    dwn_filename = 'c:\temp\websave\corona_stat.csv';
+   if ~exist(fileparts(dwn_filename),'dir')
+      mkdir(fileparts(dwn_filename))
+   end
+   if ~exist('ntitle','file')
+      addpath('../bin')
+   end
    options = weboptions;
    options.Timeout = 13;
    dwn_filename = websave(dwn_filename,url,options);
