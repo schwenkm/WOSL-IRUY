@@ -178,7 +178,7 @@ if ~exist(img_dir,'dir')
    mkdir(img_dir)
 end
 
-screenprint(fullfile(img_dir,[fname '_full']),gcf,100)
+screenprint(fullfile(img_dir,[fname '_full']),gcf,100,'ImageModTime',datenum(ti(end)))
 disp(['Save As ' fname '_full.png'])
 if isempty(png_file)
    png_file=[fname '_full.png'];
@@ -197,7 +197,7 @@ if ~do_diff
         xlabel(sprintf('vergangene %d Tage, und projizierte %d Tage', days(xx1), 10));
    end
    t3.String='(Ausschnitt-Darstellung)';
-   screenprint(fullfile(img_dir,[fname '_zoom']),gcf,100)
+   screenprint(fullfile(img_dir,[fname '_zoom']),gcf,100,'ImageModTime',datenum(ti(end)))
    disp(['Save As ' fname '_zoom.png'])
    %pause
    %IrfanView(fullfile(img_dir,[fname '_zoom.png']))
@@ -216,9 +216,14 @@ IrfanView(fullfile(img_dir,png_file))
 %% Copy dependencies
 if 0
    %%
-   dest='C:\AAA\Git\Github_Schlack_WOSL-IRUY\bin'
-   fList = matlab.codetools.requiredFilesAndProducts('corona_status.m')
-   for i=1:numel(fList)
-      copyfile(fList{i}, dest)
+   dest='C:\AAA\Git\Github_Schlack_WOSL-IRUY\bin';
+   this_mfile='corona_status.m';
+   dest=fullfile(fileparts(which('corona_status.m')),'..','bin')
+   fList = matlab.codetools.requiredFilesAndProducts(this_mfile);
+   assert (isequal(filebase(fList{1}), this_mfile)); % start for with i=2
+   for i=2:numel(fList)
+      if ~isequal(filebase(fList{i}), this_mfile)
+         copyfile(fList{i}, dest)
+      end
    end
 end
