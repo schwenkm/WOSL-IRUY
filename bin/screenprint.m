@@ -1,7 +1,8 @@
-function screenprint(filename,fignr,resolution)
+function screenprint(filename,fignr,resolution, varargin)
 %SCREENPRINT uses Matlab grab and save the screen-contents as *.png.
 %Syntax:
-%  screenprint(filename,fignr,resolution)
+%  screenprint(filename,fignr,resolution, ...)
+%  screenprint(___,imwrite_Name, imwrite_Value)
 %
 %Parameters:
 %  filename the filename of the gif-file to be saved
@@ -21,9 +22,10 @@ function screenprint(filename,fignr,resolution)
 %       using the default resolution the dot-markers are too small.
 %       workaround: use resolution = 100.
 %
+% Example:
+%    figure(1); plot(rand(3),'.-');
+%    screenprint('fig_01',1,100,'ImageModTime', datenum(2020,04,06,8,0,0))
 %See Also: screenshot
-
-narginchk(2,3);
 
 if ~ischar(filename)
    error('Arg1 must be a filename');
@@ -106,7 +108,7 @@ for figi = 1:nfigs
 end
 delete([filename 'tmp.png']);
 all_rgb=cat(3,all_r, all_g, all_b);
-imwrite(all_rgb,filename);
+imwrite(all_rgb,filename,varargin{:});
 return
 end
 
