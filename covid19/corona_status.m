@@ -241,6 +241,11 @@ end
 %%
 IrfanView(fullfile(img_dir,png_file))
 
+%% add to git
+commit_msg=sprintf('Add Images from %s', ti(end));
+bash('-v', 'git', 'commit', '-a', '-m', commit_msg);
+bash('git', 'push');
+
 %% Copy dependencies
 if 0
    %%
