@@ -8,7 +8,7 @@
 png_file=[];
 idx=0;
 for url_idx=1:2
-   url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv';
+   url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'; %#ok<NASGU>
    url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv';
    if url_idx==2
       url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv';
@@ -16,6 +16,7 @@ for url_idx=1:2
    
 for do_diff = 0:2
 do_mav  = 2*do_diff + 2*url_idx - 1;
+if do_diff==2; do_mav = 14; end
 %%
 if ~exist('dwn_url','var') || ~isequal(dwn_url, url) || ~isequal(dwn_date,date)
    dwn_filename = 'c:\temp\websave\corona_stat.csv';
@@ -39,17 +40,21 @@ cntry   = A{2:end,2};
 state   = A{2:end,1};
 cases   = str2double(A{2:end,5:end});
 Legend = {};
+DatX={};
+DatY={};
+Col={};
+to_be_deleted=[];
+lineh=[];
 %%
 EUList = {'Austria','Belgium','Bulgaria','Croatia','Cyprus','Czechia','Denmark','Estonia','Finland','France','Germany','Greece','Hungary','Ireland','Italy','Latvia','Lithuania','Luxembourg','Malta','Netherlands','Poland','Portugal','Romania','Slovakia','Slovenia','Spain','Sweden',};
 CList1 = {'EU' 'Italy','Germany','France','China','US','Korea, South'};
-CList2 = cntry(find(max(cases')>20000))';   % mind 20k infizierte
+CList2 = cntry(find(max(cases')>24000))';   % mind 24k infizierte
 if url_idx==2
-   CList2 = cntry(find(max(cases')>1300))'; % mind 1300 tote
+   CList2 = cntry(find(max(cases')>2400))'; % mind 2400 tote
 end
 CList = unique({CList1{:} CList2{:}});
 figure(1), hold off
 cnt = 0;
-to_be_delted=[];
 min_dt = inf;
 for pp = 1:numel(CList)
    if isequal(CList{pp},'Iran')
@@ -64,7 +69,7 @@ for pp = 1:numel(CList)
    if numel(i1)>1
       jj=find(cellfun(@isempty,strfind(state(i1),',')));
       i1=i1(jj); % remove e.g. 'New York County, NY'
-      cntry_long = [cntry_long ' N=' num2str(numel(i1))];
+      cntry_long = [cntry_long ' N=' num2str(numel(i1))]; %#ok<AGROW>
    end
    case_sum=sum(cases(i1,:),1);
    if do_diff
@@ -73,17 +78,17 @@ for pp = 1:numel(CList)
    dt=0;f=1;cl='-';
    cntry_short = cntry_long;
    if isequal(CList{pp},'EU')
-      cl='-.';  sum_eu=round(case_sum(end));
+      cl='m-.';  sum_eu=round(case_sum(end));
       dt=7;       cntry_short='EU';
-      if url_idx==2; dt=13; end
+      if url_idx==2; dt=14; end
    elseif isequal(CList{pp},'Germany')
       cl='r*-'; sum_ger=round(case_sum(end));
    elseif isequal(CList{pp},'France')
-      cl='.-';  sum_fr=round(case_sum(end));
+      cl='g.-';  sum_fr=round(case_sum(end));
    elseif isequal(CList{pp},'US')
-      cl='o-';  sum_us=round(case_sum(end));
+      cl='co-';  sum_us=round(case_sum(end));
    elseif isequal(CList{pp},'Italy')
-      cl='.-';
+      cl='b.-';
       dt=6; if url_idx==2; dt=12; end
    elseif isequal(CList{pp},'China') 
       dt=46;     cntry_short='Chn';
@@ -94,16 +99,21 @@ for pp = 1:numel(CList)
    elseif isequal(CList{pp},'United Kingdom') 
                  cntry_long='UK';
    end
-   plot(ti,case_sum,cl);
+   %plot(ti,case_sum,cl); grid on; hold all
+   DatX{cnt}=ti;
+   DatY{cnt}=case_sum;
+   Col{cnt}=cl;
+   to_be_deleted(cnt)=0;
    Legend{cnt}=cntry_long;
-   grid on
-   hold all
    if dt>0
       dp=21; % extrapolate max 3 weeks
       rr=1:min(numel(ti),numel(ti)-dt+21);
-      dlh=plot(ti(rr)+dt,f*case_sum(rr),':');
-      to_be_delted = [to_be_delted dlh]; % all delayed lines
+      %dlh=plot(ti(rr)+dt,f*case_sum(rr),':');
       cnt = cnt+1;
+      DatX{cnt}=ti(rr)+dt;
+      DatY{cnt}=f*case_sum(rr);
+      Col{cnt}=':';
+      to_be_deleted(cnt) = 1; % all delayed lines
       if f==1
          Legend{cnt}=[cntry_short ' ' num2str(dt) ' days ago'];
       else
@@ -111,6 +121,24 @@ for pp = 1:numel(CList)
       end
       min_dt = min(min_dt,dt);
    end
+end
+%% re-sort by maximum, so that legend reflects order:
+if do_diff==0
+   Max=NaN(1,cnt);
+   for ci=1:cnt
+      Max(ci)=max(DatY{ci});
+   end
+   Max(find(to_be_deleted))=Max(find(to_be_deleted)-1)-(1e-3);
+   [~,cii]=sort(Max,'descend');
+   fprintf('Die kleinsten 6 Zahlen (%s and below):', Legend{cii(end-5)}); disp(round(Max(cii((end-5):end))))
+end
+DatX=DatX(cii);
+DatY=DatY(cii);
+Col=Col(cii);
+to_be_deleted=to_be_deleted(cii);
+Legend=Legend(cii);
+for ci=1:cnt
+   lineh(ci)=plot(DatX{ci},DatY{ci},Col{ci}); grid on; hold all   
 end
 legend(Legend,'Location','northwest');
 set(gcf,'position',[230,200,700,420])
@@ -124,7 +152,7 @@ if do_diff
    else
       ylabel(sprintf('%s  %d-Tages-Mittelwert der %d-ten Ableitung', ti(end), do_mav, do_diff));
    end
-   delete(to_be_delted)
+   delete(lineh(to_be_deleted>0))
 else
    ylabel(sprintf('%s  Ger: %d, US: %d, EU: %d', ti(end), sum_ger, sum_us, sum_eu));
 end
