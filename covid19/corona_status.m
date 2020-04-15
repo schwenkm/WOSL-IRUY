@@ -31,7 +31,11 @@ if ~exist('dwn_url','var') || ~isequal(dwn_url, url) || ~isequal(dwn_date,date)
    dwn_filename = websave(dwn_filename,url,options);
    dwn_url=url;
    dwn_date=date;
-   A     = readtable(dwn_filename,'Format','auto');
+   if verLessThan('matlab', '9.8')
+      A     = readtable(dwn_filename);
+   else
+      A     = readtable(dwn_filename,'Format','auto');
+   end
 end
 tit=strrep(url((find(url=='/',1,'last')+1):end),'time_series_','');
 tit=strrep(tit,'.csv','');
