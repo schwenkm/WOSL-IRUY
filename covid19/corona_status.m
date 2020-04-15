@@ -31,7 +31,7 @@ if ~exist('dwn_url','var') || ~isequal(dwn_url, url) || ~isequal(dwn_date,date)
    dwn_filename = websave(dwn_filename,url,options);
    dwn_url=url;
    dwn_date=date;
-   A       = readtable(dwn_filename);
+   A     = readtable(dwn_filename,'Format','auto');
 end
 tit=strrep(url((find(url=='/',1,'last')+1):end),'time_series_','');
 tit=strrep(tit,'.csv','');
@@ -241,11 +241,6 @@ end
 %%
 IrfanView(fullfile(img_dir,png_file))
 
-%% add to git
-commit_msg=sprintf('Add Images from %s', ti(end));
-bash('-v', 'git', 'commit', '-a', '-m', commit_msg);
-bash('git', 'push');
-
 %% Copy dependencies
 if 0
    %%
@@ -259,4 +254,9 @@ if 0
          copyfile(fList{i}, dest)
       end
    end
+else
+   %% add to git
+   commit_msg=sprintf('Add Images from %s', ti(end));
+   bash('-v', 'git', 'commit', '-a', '-m', commit_msg);
+   bash('git', 'push');
 end
