@@ -8,6 +8,8 @@ dwn_filename_rec = 'd:\temp\websave\cr.csv';
 dwn_filename = websave(dwn_filename,url);
 dwn_filename_rec = websave(dwn_filename_rec,url_rec);
 
+PopCntryList = {'Germany','France total','Italy','China total','Spain','Norway','Sweden','Korea, South','US total'};
+PopCountList = [    80         67           6         1400       50       5.4     10.2       51.2           327] * 1e6;
 %%
 A       = readtable(dwn_filename);
 ti      = datetime(A{1,5:end},'InputFormat','MM/dd/yy');
@@ -30,6 +32,7 @@ assert(all(ti==ti_rec))
 [cntry_rec, recovered] = collect_states(cntry_rec,recovered,'US');
 [cntry_rec, recovered] = collect_states(cntry_rec,recovered,'France');
 [cntry_rec, recovered] = collect_states(cntry_rec,recovered,'China');
+%%
 
 %% cases
 CList ={'Germany','France total','Italy','China total','Spain','Norway','Sweden','Korea, South','US total'};
@@ -171,7 +174,7 @@ for pp = 1:numel(CList)
     active = active(2:end);
     increase_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,increase);
     active_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,active);
-    plot(active,increase_f,'.-');
+    plot(active_f,increase_f,'.-');
     Legend{cnt}=cntry{i1};
     grid on
     hold all
@@ -180,6 +183,33 @@ legend(Legend);
 %set(gca,'YScale','log')
 %set(gca,'XScale','log')
 title({'increase vs active','1 week average'})
+xlabel('active')
+ylabel('increase')
+%% active cases vs increase normed to population size (phase state diagram)
+CList ={'Germany','France total','Italy','China total','Spain','US total'};
+figure(8), hold off
+cnt = 0;Legend=[];
+for pp = 1:numel(CList)
+    cnt = cnt+1;
+    norm_idx = find(strcmp(PopCntryList,CList{pp}),1);
+    i1     = find(strcmp(cntry,CList{pp}),1);    
+    i1_rec = find(strcmp(cntry_rec,CList{pp}),1);
+    active = cases(i1,:) - recovered(i1_rec,:);
+    increase = diff(cases(i1,:));
+    active = active(2:end);
+    increase_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,increase);
+    active_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,active);
+    increase_n = increase_f / PopCountList(norm_idx) * 100000;
+    active_n = active_f / PopCountList(norm_idx) * 100000;
+    plot(active_n,increase_n,'.-');
+    Legend{cnt}=cntry{i1};
+    grid on
+    hold all
+end
+legend(Legend);
+%set(gca,'YScale','log')
+%set(gca,'XScale','log')
+title({'increase vs active per 100000','1 week average'})
 xlabel('active')
 ylabel('increase')
 
