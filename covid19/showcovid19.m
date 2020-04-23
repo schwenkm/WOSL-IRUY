@@ -12,42 +12,47 @@ dwn_filename     = websave(dwn_filename,url);
 dwn_filename_rec = websave(dwn_filename_rec,url_rec);
 dwn_filename_dea = websave(dwn_filename_dea,url_dea);
 
-PopCntryList = {'Germany','France total','Italy','China total','Spain','Norway','Sweden','Korea, South','US total'};
-PopCountList = [    80         67           60         1400       50       5.4     10.2       51.2           327] * 1e6;
+PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total'};
+PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327] * 1e6;
+
 %%
 A       = readtable(dwn_filename);
 ti      = datetime(A{1,5:end},'InputFormat','MM/dd/yy');
 cntry   = A{2:end,2};
+region  = A{2:end,1};
 state   = A{2:end,1};
 cases   = str2double(A{2:end,5:end});
-%%
+%
 A_rec       = readtable(dwn_filename_rec);
 ti_rec      = datetime(A_rec{1,5:end},'InputFormat','MM/dd/yy');
 cntry_rec   = A_rec{2:end,2};
+region_rec  = A_rec{2:end,1};
 state_rec   = A_rec{2:end,1};
 recovered   = str2double(A_rec{2:end,5:end});
-%%
+%
 A_dea       = readtable(dwn_filename_dea);
 ti_dea      = datetime(A_dea{1,5:end},'InputFormat','MM/dd/yy');
 cntry_dea   = A_dea{2:end,2};
+region_dea  = A_dea{2:end,1};
 state_dea   = A_dea{2:end,1};
 death      = str2double(A_dea{2:end,5:end});
-%%
+%
 assert(all(ti==ti_rec))
 assert(all(ti==ti_dea))
 
-%% collect states
+% collect states
 [cntry, cases] = collect_states(cntry,cases,'US');
 [cntry, cases] = collect_states(cntry,cases,'France');
 [cntry, cases] = collect_states(cntry,cases,'China');
+[cntry, cases] = collect_region(cntry,region,cases,'China','Hubei');
 [cntry_rec, recovered] = collect_states(cntry_rec,recovered,'US');
 [cntry_rec, recovered] = collect_states(cntry_rec,recovered,'France');
 [cntry_rec, recovered] = collect_states(cntry_rec,recovered,'China');
+[cntry_rec, recovered] = collect_region(cntry_rec,region_rec,recovered,'China','Hubei');
 [cntry_dea, death] = collect_states(cntry_dea,death,'US');
 [cntry_dea, death] = collect_states(cntry_dea,death,'France');
 [cntry_dea, death] = collect_states(cntry_dea,death,'China');
-
-%%
+[cntry_dea, death] = collect_region(cntry_dea,region_dea,death,'China','Hubei');
 
 %% cases
 CList ={'Germany','France total','Italy','China total','Spain','Norway','Sweden','Korea, South','US total'};
@@ -205,7 +210,7 @@ ylabel('increase')
 %% active cases vs increase normed to population size (phase state diagram)
 CList ={'Germany','France total','Italy','China total','Spain','US total'};
 figure(8), hold off
-cnt = 0;clear Legend CN ICN TCN;
+cnt = 0;clear Legend ACN ICN TCN;
 for pp = 1:numel(CList)
     cnt = cnt+1;
     norm_idx = find(strcmp(PopCntryList,CList{pp}),1);
@@ -243,6 +248,64 @@ title({'Covid19, increase of total cases vs active cases','per 100000 inhabitant
 xlabel('active')
 ylabel('increase')
 
+%% bubble + active cases vs increase normed to population size (phase state diagram)
+CList ={'Germany','France total','Italy','China Hubei','Spain','US total'};
+figure(9), hold off
+cnt = 0;clear Legend ACN ICN TCN DDN;
+ciraa=0:30:360;cirxx=cosd(ciraa);ciryy=sind(ciraa);
+for pp = 1:numel(CList)
+    cnt = cnt+1;
+    norm_idx = find(strcmp(PopCntryList,CList{pp}),1);
+    i1     = find(strcmp(cntry,CList{pp}),1);    
+    i1_rec = find(strcmp(cntry_rec,CList{pp}),1);
+    i1_dea = find(strcmp(cntry_dea,CList{pp}),1);    
+    active = cases(i1,:) - recovered(i1_rec,:) - death(i1_dea,:);
+    increase = diff(cases(i1,:));
+    active = active(2:end);
+    increase_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,increase);
+    active_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,active);
+    death_diff_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,diff(death(i1_dea,:)));    
+    increase_n = increase_f / PopCountList(norm_idx) * 100000;
+    active_n = active_f / PopCountList(norm_idx) * 100000;
+    death_diff_n = death_diff_f / PopCountList(norm_idx) * 100000;
+    sel = 1:(numel(active_n)-2);
+    hp = plot(active_n(sel),increase_n(sel),'-','LineWidth',1);
+    hold all
+        
+    Legend{cnt}=cntry{i1};
+    grid on
+    
+    ACN(cnt,:) = active_n(sel)';
+    ICN(cnt,:) = increase_n(sel)';
+    TCN(cnt,:) = ti(sel)';
+    DDN(cnt,:) = death_diff_n(sel)';
+    col(cnt,:) = hp.Color;
+end
+
+% plot(ACN(:,(end-1)), ICN(:,(end-1)),'bd','MarkerSize',5); cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-1)));
+% plot(ACN(:,(end-8)), ICN(:,(end-8)),'bo','MarkerSize',4); cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-8)));
+% plot(ACN(:,(end-15)), ICN(:,(end-15)),'bs','MarkerSize',3); cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-15)));
+% 
+
+for qq = 1:size(ACN,1)
+    scatter(ACN(qq,:),ICN(qq,:),1+100*DDN(qq,:),col(qq,:));
+    scatter(ACN(qq,(end-[1     ])),ICN(qq,(end-[1     ])),1+100*DDN(qq,(end-[1     ])),col(qq,:),'filled');
+    scatter(ACN(qq,(end-[  8   ])),ICN(qq,(end-[  8   ])),1+100*DDN(qq,(end-[  8   ])),col(qq,:),'filled');
+    scatter(ACN(qq,(end-[    15])),ICN(qq,(end-[    15])),1+100*DDN(qq,(end-[    15])),col(qq,:),'filled');
+    if qq == 1
+        cnt=cnt+1;Legend{cnt}=['size proportional' 10 13 'to daily deaths'];
+        cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[1     ])))
+        cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[  8   ])))
+        cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[    15])))
+    end
+end
+
+legend(Legend);
+%set(gca,'YScale','log')
+%set(gca,'XScale','log')
+title({'Covid19, increase of total cases vs active cases','one point per day, numbers per 100000 inhabitants - 1 week average'})
+xlabel('active')
+ylabel('increase')
 
 %% collect states
 function [new_cntry, new_cases] = collect_states(CntryList,Cases,Cntry_Name)
@@ -254,4 +317,20 @@ function [new_cntry, new_cases] = collect_states(CntryList,Cases,Cntry_Name)
     new_cntry{newidx} = [collectCntry ' total'];
     new_cases(newidx,:) = 0;
     for pp = icoll'     new_cases(newidx,:) = new_cases(newidx,:) + new_cases(pp,:); end
+end
+
+%[cntry, cases] = collect_region(cntry,cases,'China','Hubei');
+function [new_cntry, new_cases] = collect_region(CntryList,Region,Cases,Cntry_Name,Region_Name)
+    new_cntry = CntryList;
+    new_cases = Cases;
+    newidx = numel(CntryList) +1;
+    collectCntry = Cntry_Name;
+    icoll = find(strcmp(CntryList,collectCntry));
+    new_cntry{newidx} = [collectCntry ' ' Region_Name];
+    new_cases(newidx,:) = 0;
+    for pp = icoll'
+        if strcmp(Region(pp),Region_Name)
+            new_cases(newidx,:) = new_cases(newidx,:) + new_cases(pp,:); 
+        end
+    end
 end
