@@ -12,8 +12,8 @@ dwn_filename     = websave(dwn_filename,url);
 dwn_filename_rec = websave(dwn_filename_rec,url_rec);
 dwn_filename_dea = websave(dwn_filename_dea,url_dea);
 
-PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total'};
-PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327] * 1e6;
+PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total','Czechia'};
+PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327      10.6 ] * 1e6;
 
 %%
 A       = readtable(dwn_filename);
@@ -249,7 +249,7 @@ xlabel('active')
 ylabel('increase')
 
 %% bubble + active cases vs increase normed to population size (phase state diagram)
-CList ={'Germany','France total','Italy','China Hubei','Spain','US total'};
+CList ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total'};
 figure(9), hold off
 cnt = 0;clear Legend ACN ICN TCN DDN;
 ciraa=0:30:360;cirxx=cosd(ciraa);ciryy=sind(ciraa);
@@ -262,9 +262,13 @@ for pp = 1:numel(CList)
     active = cases(i1,:) - recovered(i1_rec,:) - death(i1_dea,:);
     increase = diff(cases(i1,:));
     active = active(2:end);
-    increase_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,increase);
-    active_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,active);
-    death_diff_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,diff(death(i1_dea,:)));    
+    filtercoef=[1 1 1 1 1 1 1]/7;
+    
+    
+    increase_f = filtfilt(filtercoef,1,increase);
+    active_f = filtfilt(filtercoef,1,active);
+    death_diff_f = filtfilt(filtercoef,1,diff(death(i1_dea,:)));    
+    
     increase_n = increase_f / PopCountList(norm_idx) * 100000;
     active_n = active_f / PopCountList(norm_idx) * 100000;
     death_diff_n = death_diff_f / PopCountList(norm_idx) * 100000;
@@ -293,19 +297,20 @@ for qq = 1:size(ACN,1)
     scatter(ACN(qq,(end-[  8   ])),ICN(qq,(end-[  8   ])),1+100*DDN(qq,(end-[  8   ])),col(qq,:),'filled');
     scatter(ACN(qq,(end-[    15])),ICN(qq,(end-[    15])),1+100*DDN(qq,(end-[    15])),col(qq,:),'filled');
     if qq == 1
-        cnt=cnt+1;Legend{cnt}=['size proportional' 10 13 'to daily deaths'];
-        cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[1     ])))
-        cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[  8   ])))
-        cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[    15])))
+        cnt=cnt+1;Legend{cnt}=['daily deaths per' 10 13 'capita, proportional'];
+        cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[1     ])));
+        cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[  8   ])));
+        cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[    15])));
     end
 end
 
 legend(Legend);
 %set(gca,'YScale','log')
 %set(gca,'XScale','log')
-title({'Covid19, increase of total cases vs active cases','one point per day, numbers per 100000 inhabitants - 1 week average'})
-xlabel('active')
-ylabel('increase')
+title({'Covid19 dynamic','daily increase over active cases - 1 week average'})
+xlabel('active cases per 100000 inhabitants')
+ylabel('increase per day per 100000 inhabitants')
+xl=xlim;yl=ylim;xlim([0 max(xl)]);ylim([0 max(yl)]);
 
 %% collect states
 function [new_cntry, new_cases] = collect_states(CntryList,Cases,Cntry_Name)
