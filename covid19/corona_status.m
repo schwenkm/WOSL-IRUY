@@ -161,7 +161,7 @@ else
    ylabel(sprintf('%s  Ger: %d, US: %d, EU: %d', ti(end), sum_ger, sum_us, sum_eu));
 end
 ntitle(['Quelle: Johns Hopkins database  /  ' tit])
-ax=gca; ax.YRuler.Exponent = 0;
+ax=gca; ax.YRuler.Exponent=0; ax.YRuler.TickLabelFormat='%.0f';
 
 %%
 idx=idx+1;
