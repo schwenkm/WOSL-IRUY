@@ -71,7 +71,15 @@ if isempty(cygwin_bash_path)
    cygpath_path=evalc('!which cygpath');
    cygpath_path=strtrim(cygpath_path);
    if ~isequal(cygpath_path, '/usr/bin/cygpath')
-      warning('Please Install Cygwin first');
+      if exist('C:\cygwin64\bin\bash.exe','file')
+         warning('Please Add "C:\cygwin64\bin\" to your WINDOWS PATH environment variable (done).');
+         setenv('PATH', ['C:\cygwin64\bin\;' getenv('PATH')]);
+      elseif exist('C:\cygwin\bin\bash.exe','file')
+         warning('Please Add "C:\cygwin\bin\" to your WINDOWS PATH environment variable (done).');
+         setenv('PATH', ['C:\cygwin\bin\;' getenv('PATH')]);
+      else
+         warning('Please Install Cygwin first');
+      end
    else
       cygwin_bash_path=evalc('!cygpath -w /usr/bin/bash');
       cygwin_bash_path=strtrim(cygwin_bash_path);
@@ -114,7 +122,8 @@ if nargin==1 && isequal(cmd,'--verify-installation')
    V('tig',   'NOTE: only recommended!')
    V('xxd',   'NOTE: only recommended!')
    V('curl',  'NOTE: only recommended!', {'/cygdrive/c/windows/system32/curl'})
-   V('unzip', 'NOTE: only recommended, e.g. for Diff with Vim')
+   % You might also want to install these cygwin packages:
+   %  inetutils (for ftp, telnet, ...)
    warning(old_state)
    lw2=lastwarn;
    if ~isequal(lw1,lw2)
