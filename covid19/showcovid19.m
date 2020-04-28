@@ -13,11 +13,7 @@ dwn_filename_rec = websave(dwn_filename_rec,url_rec);
 dwn_filename_dea = websave(dwn_filename_dea,url_dea);
 
 PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total','Czechia'};
-<<<<<<< HEAD
-PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327         15.6 ] * 1e6;
-=======
 PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327      10.6 ] * 1e6;
->>>>>>> e1eb0270934e1e25105bcb47563105e4b24f10f2
 
 %%
 A       = readtable(dwn_filename);
@@ -253,11 +249,7 @@ xlabel('active')
 ylabel('increase')
 
 %% bubble + active cases vs increase normed to population size (phase state diagram)
-<<<<<<< HEAD
-CList ={'Germany','France total','Italy','China Hubei','Spain','US total','Sweden','Czechia'};
-=======
 CList ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total'};
->>>>>>> e1eb0270934e1e25105bcb47563105e4b24f10f2
 figure(9), hold off
 cnt = 0;clear Legend ACN ICN TCN DDN;
 ciraa=0:30:360;cirxx=cosd(ciraa);ciryy=sind(ciraa);
@@ -268,23 +260,13 @@ for pp = 1:numel(CList)
     i1_rec = find(strcmp(cntry_rec,CList{pp}),1);
     i1_dea = find(strcmp(cntry_dea,CList{pp}),1);    
     active = cases(i1,:) - recovered(i1_rec,:) - death(i1_dea,:);
-    increase = diff(cases(i1,:));
     active = active(2:end);
-<<<<<<< HEAD
-    cases_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,cases(i1,:));
-    increase_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,increase);
-    active_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,active);
-    death_diff_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,diff(death(i1_dea,:)));    
-    increase_f = diff(cases_f);
-=======
     filtercoef=[1 1 1 1 1 1 1]/7;
-    
-    
-    increase_f = filtfilt(filtercoef,1,increase);
+    cases_f = filtfilt(filtercoef,1,cases(i1,:));
     active_f = filtfilt(filtercoef,1,active);
     death_diff_f = filtfilt(filtercoef,1,diff(death(i1_dea,:)));    
-    
->>>>>>> e1eb0270934e1e25105bcb47563105e4b24f10f2
+    increase_f = diff(cases_f);
+  
     increase_n = increase_f / PopCountList(norm_idx) * 100000;
     active_n = active_f / PopCountList(norm_idx) * 100000;
     death_diff_n = death_diff_f / PopCountList(norm_idx) * 100000;
@@ -313,11 +295,7 @@ for qq = 1:size(ACN,1)
     scatter(ACN(qq,(end-[  8   ])),ICN(qq,(end-[  8   ])),1+100*DDN(qq,(end-[  8   ])),col(qq,:),'filled');
     scatter(ACN(qq,(end-[    15])),ICN(qq,(end-[    15])),1+100*DDN(qq,(end-[    15])),col(qq,:),'filled');
     if qq == 1
-<<<<<<< HEAD
-        cnt=cnt+1;Legend{cnt}=['size proportional' 10 13 'to daily deaths'];
-=======
-        cnt=cnt+1;Legend{cnt}=['daily deaths per' 10 13 'capita, proportional'];
->>>>>>> e1eb0270934e1e25105bcb47563105e4b24f10f2
+        cnt=cnt+1;Legend{cnt}=['daily deaths per' 10 13 '100000, proportional'];
         cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[1     ])));
         cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[  8   ])));
         cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[    15])));
