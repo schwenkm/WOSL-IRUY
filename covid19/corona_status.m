@@ -52,7 +52,7 @@ lineh=[];
 %%
 EUList = {'Austria','Belgium','Bulgaria','Croatia','Cyprus','Czechia','Denmark','Estonia','Finland','France','Germany','Greece','Hungary','Ireland','Italy','Latvia','Lithuania','Luxembourg','Malta','Netherlands','Poland','Portugal','Romania','Slovakia','Slovenia','Spain','Sweden',};
 CList1 = {'EU' 'Italy','Germany','France','China','US','Korea, South'};
-CList2 = cntry(find(max(cases')>24000))';   % mind 24k infizierte
+CList2 = cntry(find(max(cases')>30000))';   % mind 30k infizierte
 if url_idx==2
    CList2 = cntry(find(max(cases')>2400))'; % mind 2400 tote
 end
@@ -61,9 +61,9 @@ figure(1), hold off
 cnt = 0;
 min_dt = inf;
 for pp = 1:numel(CList)
-   if isequal(CList{pp},'Iran')
-      continue; % ignore Iran for now
-   end
+%    if isequal(CList{pp},'Iran')
+%       continue; % ignore Iran for now
+%    end
    cnt = cnt+1;
    cntry_long =           CList{pp};
    i1 = find(strcmp(cntry,CList{pp}));
@@ -97,9 +97,9 @@ for pp = 1:numel(CList)
    elseif isequal(CList{pp},'China') 
       dt=46;     cntry_short='Chn';
       if url_idx==2; dt=53; end
-   elseif isequal(CList{pp},'Korea, South') 
-      f=2;       cntry_short='SK';
-      dt=15; % if url_idx==2; dt=13; end
+%    elseif isequal(CList{pp},'Korea, South') 
+%       f=2;       cntry_short='SK';
+%       dt=15; % if url_idx==2; dt=13; end
    elseif isequal(CList{pp},'United Kingdom') 
                  cntry_long='UK';
    end
@@ -141,11 +141,29 @@ DatY=DatY(cii);
 Col=Col(cii);
 to_be_deleted=to_be_deleted(cii);
 Legend=Legend(cii);
+DatY_end = NaN(1,cnt);
 for ci=1:cnt
    lineh(ci)=plot(DatX{ci},DatY{ci},Col{ci}); grid on; hold all   
+   DatY_end(ci) = DatY{ci}(end);
 end
 legend(Legend,'Location','northwest');
 set(gcf,'position',[230,200,700,420])
+%% Add extra Legend at right to reflect right most order with colors
+xx=max(get(gca,'XLim')) + diff(get(gca,'XLim'))/100;
+yy=max(get(gca,'YLim'));
+[~,ci_sort]=sort(DatY_end,'descend');
+for ci=[-1 ci_sort]
+   if ci==-1
+      set(text(xx,yy,'Order:'),'Units','pixels'); % do not change on Zoom
+      yy = yy - diff(get(gca,'YLim'))/40;
+   elseif ~contains(Legend{ci},' ago')
+      yy = yy - diff(get(gca,'YLim'))/20;
+      legNoSp = Legend{ci}; legNoSp(find(legNoSp==' '):end)='';
+      legh(ci)=text(xx,yy,legNoSp,'Color',get(lineh(ci),'Color'));
+      set(legh(ci),'Units','pixels'); % do not change on Zoom
+   end
+end
+%%
 if do_diff
    tit=[ 'diff(' tit ',' num2str(do_diff) ')' ];
    if do_mav
@@ -252,8 +270,7 @@ if 0
    this_mfile='corona_status.m';
    dest=fullfile(fileparts(which('corona_status.m')),'..','bin')
    fList = matlab.codetools.requiredFilesAndProducts(this_mfile);
-   assert (isequal(filebase(fList{1}), this_mfile)); % start for with i=2
-   for i=2:numel(fList)
+   for i=1:numel(fList)
       if ~isequal(filebase(fList{i}), this_mfile)
          copyfile(fList{i}, dest)
       end
