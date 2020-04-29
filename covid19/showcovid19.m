@@ -12,8 +12,15 @@ dwn_filename     = websave(dwn_filename,url);
 dwn_filename_rec = websave(dwn_filename_rec,url_rec);
 dwn_filename_dea = websave(dwn_filename_dea,url_dea);
 
-PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total','Czechia'};
-PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327      10.6 ] * 1e6;
+PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total','Czechia','Singapore'};
+PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327      10.6          5.6] * 1e6;
+
+%%
+Measures ={...
+            'Germany','11.3.2020','keine Groﬂveranstalltungen','-';...
+            'Germany','16.3.2020','allgemeine Schlieﬂungen','-'
+            'Germany','22.3.2020','Kontaktverbot','-'
+    };
 
 %%
 A       = readtable(dwn_filename);
@@ -249,7 +256,7 @@ xlabel('active')
 ylabel('increase')
 
 %% bubble + active cases vs increase normed to population size (phase state diagram)
-CList ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total'};
+CList ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total','Singapore'};
 figure(9), hold off
 cnt = 0;clear Legend ACN ICN TCN DDN;
 ciraa=0:30:360;cirxx=cosd(ciraa);ciryy=sind(ciraa);
@@ -260,17 +267,16 @@ for pp = 1:numel(CList)
     i1_rec = find(strcmp(cntry_rec,CList{pp}),1);
     i1_dea = find(strcmp(cntry_dea,CList{pp}),1);    
     active = cases(i1,:) - recovered(i1_rec,:) - death(i1_dea,:);
-    active = active(2:end);
     filtercoef=[1 1 1 1 1 1 1]/7;
     cases_f = filtfilt(filtercoef,1,cases(i1,:));
     active_f = filtfilt(filtercoef,1,active);
-    death_diff_f = filtfilt(filtercoef,1,diff(death(i1_dea,:)));    
-    increase_f = diff(cases_f);
+    death_diff_f = filtfilt(filtercoef,1,[0 diff(death(i1_dea,:))]); % fill with 0 at index 1
+    increase_f = [0 diff(cases_f)]; % fill with 0 at index 1
   
     increase_n = increase_f / PopCountList(norm_idx) * 100000;
     active_n = active_f / PopCountList(norm_idx) * 100000;
     death_diff_n = death_diff_f / PopCountList(norm_idx) * 100000;
-    sel = 1:(numel(active_n)-2);
+    sel = 1:(numel(active_n)-0);
     hp = plot(active_n(sel),increase_n(sel),'-','LineWidth',1);
     hold all
         
@@ -282,13 +288,11 @@ for pp = 1:numel(CList)
     TCN(cnt,:) = ti(sel)';
     DDN(cnt,:) = death_diff_n(sel)';
     col(cnt,:) = hp.Color;
+    CNT{cnt}   = CList{pp};
 end
 
-% plot(ACN(:,(end-1)), ICN(:,(end-1)),'bd','MarkerSize',5); cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-1)));
-% plot(ACN(:,(end-8)), ICN(:,(end-8)),'bo','MarkerSize',4); cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-8)));
-% plot(ACN(:,(end-15)), ICN(:,(end-15)),'bs','MarkerSize',3); cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-15)));
-% 
-
+textoffset_x = 1;
+textoffset_y = 0;
 for qq = 1:size(ACN,1)
     scatter(ACN(qq,:),ICN(qq,:),1+100*DDN(qq,:),col(qq,:));
     scatter(ACN(qq,(end-[1     ])),ICN(qq,(end-[1     ])),1+100*DDN(qq,(end-[1     ])),col(qq,:),'filled');
@@ -300,6 +304,7 @@ for qq = 1:size(ACN,1)
         cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[  8   ])));
         cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[    15])));
     end
+    text(ACN(qq,end)+textoffset_x,ICN(qq,end)+textoffset_y,CNT(qq));
 end
 
 legend(Legend);
