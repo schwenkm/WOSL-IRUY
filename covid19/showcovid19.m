@@ -12,14 +12,17 @@ dwn_filename     = websave(dwn_filename,url);
 dwn_filename_rec = websave(dwn_filename_rec,url_rec);
 dwn_filename_dea = websave(dwn_filename_dea,url_dea);
 
-PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total','Czechia','Singapore'};
-PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327      10.6          5.6] * 1e6;
+PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total','Czechia','Singapore','Taiwan*'};
+PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327      10.6          5.6       23.8] * 1e6;
 
 %%
+LANG = 'DE';
 Measures ={...
-            'Germany','11.3.2020','keine Groﬂveranstalltungen','-';...
-            'Germany','16.3.2020','allgemeine Schlieﬂungen','-'
-            'Germany','22.3.2020','Kontaktverbot','-'
+            'Germany','11-Mar-2020','keine Groﬂveranstalltungen','-';...
+            'Germany','16-Mar-2020','allgemeine Schlieﬂungen','-';...
+            'Germany','22-Mar-2020','Kontaktverbot','-';...
+            'Germany','15-Apr-2020','kleine Gesch‰fte ˆffnen','+';...
+            'Germany', '3-May-2020','teilweise Schulbetrieb','+';...
     };
 
 %%
@@ -61,6 +64,8 @@ assert(all(ti==ti_dea))
 [cntry_dea, death] = collect_states(cntry_dea,death,'China');
 [cntry_dea, death] = collect_region(cntry_dea,region_dea,death,'China','Hubei');
 
+%%
+if (0) % skip others
 %% cases
 CList ={'Germany','France total','Italy','China total','Spain','Norway','Sweden','Korea, South','US total'};
 %CList ={'US total'};
@@ -254,12 +259,13 @@ legend(Legend);
 title({'Covid19, increase of total cases vs active cases','per 100000 inhabitants - 1 week average'})
 xlabel('active')
 ylabel('increase')
-
+end % skip others
 %% bubble + active cases vs increase normed to population size (phase state diagram)
 CList ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total','Singapore'};
-figure(9), hold off
-cnt = 0;clear Legend ACN ICN TCN DDN;
-ciraa=0:30:360;cirxx=cosd(ciraa);ciryy=sind(ciraa);
+figure(9), close gcf;
+hf9 = figure(9), hold off
+hf9.Position = [50 -200 1200 800]
+cnt = 0;clear ACN ICN TCN DDN;
 for pp = 1:numel(CList)
     cnt = cnt+1;
     norm_idx = find(strcmp(PopCntryList,CList{pp}),1);
@@ -277,12 +283,11 @@ for pp = 1:numel(CList)
     active_n = active_f / PopCountList(norm_idx) * 100000;
     death_diff_n = death_diff_f / PopCountList(norm_idx) * 100000;
     sel = 1:(numel(active_n)-0);
-    hp = plot(active_n(sel),increase_n(sel),'-','LineWidth',1);
+    % plot line, defining country color 
+    hp = plot(active_n(sel),increase_n(sel),'-','LineWidth',1.5,'HandleVisibility','off');
     hold all
-        
-    Legend{cnt}=cntry{i1};
-    grid on
     
+    % store date for annotation ...
     ACN(cnt,:) = active_n(sel)';
     ICN(cnt,:) = increase_n(sel)';
     TCN(cnt,:) = ti(sel)';
@@ -293,27 +298,78 @@ end
 
 textoffset_x = 1;
 textoffset_y = 0;
+
+legcnt=0;clear Legend;
+
+% death rate circles annotation, days and end date legend entry
+DDN_ano = [2 1 0.1 0.01];
+scatter(repmat(max(ACN(:))/20,1,numel(DDN_ano)),max(ICN(:))*(1-1/20-1/30-(1:numel(DDN_ano))/30),2+100*DDN_ano,'k');
+scatter(0,0,1,'k','filled');
+if LANG == 'DE'
+legcnt=legcnt+1;Legend{legcnt}='Tage';
+text(max(ACN(:))/20-5*textoffset_x,max(ICN(:))*(1-1/20),{'Tote pro Tag' 'pro 100000 Einw.'})
+else
+legcnt=legcnt+1;Legend{legcnt}='days';
+text(max(ACN(:))/20-5*textoffset_x,max(ICN(:))*(1-1/20),{'death per day' 'per 100000 inh.'})
+end
+legcnt=legcnt+1;Legend{legcnt}=datestr(TCN(1,end));
+text(repmat(max(ACN(:))/20,1,numel(DDN_ano))+5*textoffset_x,max(ICN(:))*(1-1/20-1/30-(1:numel(DDN_ano))/30),num2str(DDN_ano(:)))
+
+% bubble line and country text
 for qq = 1:size(ACN,1)
-    scatter(ACN(qq,:),ICN(qq,:),1+100*DDN(qq,:),col(qq,:));
-    scatter(ACN(qq,(end-[1     ])),ICN(qq,(end-[1     ])),1+100*DDN(qq,(end-[1     ])),col(qq,:),'filled');
-    scatter(ACN(qq,(end-[  8   ])),ICN(qq,(end-[  8   ])),1+100*DDN(qq,(end-[  8   ])),col(qq,:),'filled');
-    scatter(ACN(qq,(end-[    15])),ICN(qq,(end-[    15])),1+100*DDN(qq,(end-[    15])),col(qq,:),'filled');
-    if qq == 1
-        cnt=cnt+1;Legend{cnt}=['daily deaths per' 10 13 '100000, proportional'];
-        cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[1     ])));
-        cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[  8   ])));
-        cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-[    15])));
-    end
+    scatter(ACN(qq,:),ICN(qq,:),2+100*DDN(qq,:),col(qq,:),'HandleVisibility','off');
+    scatter(ACN(qq,end),ICN(qq,end),2+100*DDN(qq,end),col(qq,:),'filled','HandleVisibility','off');
     text(ACN(qq,end)+textoffset_x,ICN(qq,end)+textoffset_y,CNT(qq));
 end
+% max death rate
+[qq,pp] = ind2sub(size(DDN),find(DDN == max(DDN(:))));
+scatter(ACN(qq,pp),ICN(qq,pp),2+100*DDN(qq,pp),col(qq,:),'HandleVisibility','off','LineWidth',1.5);
+text(ACN(qq,pp)+5*textoffset_x,ICN(qq,pp)+textoffset_y,[num2str(DDN(qq,pp),2) ]);
 
-legend(Legend);
-%set(gca,'YScale','log')
-%set(gca,'XScale','log')
-title({'Covid19 dynamic','daily increase over active cases - 1 week average'})
-xlabel('active cases per 100000 inhabitants')
-ylabel('increase per day per 100000 inhabitants')
-xl=xlim;yl=ylim;xlim([0 max(xl)]);ylim([0 max(yl)]);
+
+
+% measures annotation and legend entries
+for qq = 1:size(ACN,1)
+    for pp = 1:size(Measures,1)
+        if strcmp(Measures{pp,1},CNT(qq))% ={'Germany','11.3.2020','keine Groﬂveranstalltungen','-'}
+            idx = find(TCN(qq,:)==Measures{pp,2});
+            if ~isempty(idx)
+                legcnt=legcnt+1;Legend{legcnt}=[Measures{pp,2} ': ' Measures{pp,3}];
+                if strcmp(Measures{pp,4},'+')
+                    so=scatter(ACN(qq,idx),ICN(qq,idx),80,'d','filled','MarkerEdgeColor',col(qq,:),'MarkerFaceColor','g','LineWidth',1.5);
+                    so.MarkerFaceAlpha = 0.5;
+                else
+                    so=scatter(ACN(qq,idx),ICN(qq,idx),80,'d','filled','MarkerEdgeColor',col(qq,:),'MarkerFaceColor','r','LineWidth',1.5);
+                    so.MarkerFaceAlpha = 0.5;
+                end
+            end
+        end
+    end
+    scatter(ACN(qq,:),ICN(qq,:),1+100*DDN(qq,:),col(qq,:));
+end
+
+% plot documentation
+legend(Legend,'location','northeastoutside');
+grid on
+grid minor
+
+if LANG == 'DE'
+    title({'Covid19 Dynamik','t‰glich neue ¸ber aktiven F‰llen bezogen auf die Einwohnerzahl'})
+    xlabel('aktive F‰lle pro 100000 Einwohner')
+    ylabel('t‰glich neue F‰lle pro 100000 Einwohner')
+else
+    title({'Covid19 dynamic','daily new over active cases in relation to population size'})
+    xlabel('active cases per 100000 inhabitants')
+    ylabel('new per day per 100000 inhabitants')
+end
+dim = [.025 .02 .975 .035];
+str = {'data provided by Johns Hopkins University Center for Systems Science and Engineering (JHU CSSE): https://systems.jhu.edu/'...
+       'per GitHub: https://github.com/CSSEGISandData/COVID-19, presentation: Marcus Schwenk (2020)'}
+ant = annotation('textbox',dim,'String',str,'FitBoxToText','on','LineStyle','none');
+ant.FontSize = 8;
+
+% align boundaries
+xl=xlim;yl=ylim;xlim([-10 ceil(max(xl)/100)*100]);ylim([-0.5 ceil(max(yl)/10)*10]);
 
 %% collect states
 function [new_cntry, new_cases] = collect_states(CntryList,Cases,Cntry_Name)
