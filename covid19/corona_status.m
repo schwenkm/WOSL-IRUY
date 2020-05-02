@@ -37,6 +37,10 @@ if ~exist('dwn_url','var') || ~isequal(dwn_url, url) || ~isequal(dwn_date,date)
       A     = readtable(dwn_filename,'Format','auto');
    end
 end
+if idx==0
+   % Start with the current verion of images:
+   bash('-v', 'git', 'pull');
+end
 tit=strrep(url((find(url=='/',1,'last')+1):end),'time_series_','');
 tit=strrep(tit,'.csv','');
 ti      = datetime(A{1,5:end},'InputFormat','MM/dd/yy');
