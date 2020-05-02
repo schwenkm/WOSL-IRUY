@@ -262,9 +262,10 @@ ylabel('increase')
 end % skip others
 %% bubble + active cases vs increase normed to population size (phase state diagram)
 CList ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total','Singapore'};
+%CList ={'Germany'}
 figure(9), close gcf;
-hf9 = figure(9), hold off
-hf9.Position = [50 -200 1200 800]
+hf9 = figure(9); hold off
+hf9.Position = [50 -200 1200 800];
 cnt = 0;clear ACN ICN TCN DDN;
 for pp = 1:numel(CList)
     cnt = cnt+1;
@@ -301,19 +302,24 @@ textoffset_y = 0;
 
 legcnt=0;clear Legend;
 
+%
+topy=ceil(max(ICN(:))/10)*10;
+text(max(ACN(:))/20-5*textoffset_x,topy*(1-1/40),['Daten: ' datestr(min(TCN(:))) ' bis ' datestr(max(TCN(:)))])
+
 % death rate circles annotation, days and end date legend entry
 DDN_ano = [2 1 0.1 0.01];
-scatter(repmat(max(ACN(:))/20,1,numel(DDN_ano)),max(ICN(:))*(1-1/20-1/30-(1:numel(DDN_ano))/30),2+100*DDN_ano,'k');
+scatter(repmat(max(ACN(:))/20,1,numel(DDN_ano)),topy*(1-2/20-1/30-(1:numel(DDN_ano))/30),2+100*DDN_ano,'k');
 scatter(0,0,1,'k','filled');
 if LANG == 'DE'
 legcnt=legcnt+1;Legend{legcnt}='Tage';
-text(max(ACN(:))/20-5*textoffset_x,max(ICN(:))*(1-1/20),{'Tote pro Tag' 'pro 100000 Einw.'})
+text(max(ACN(:))/20-5*textoffset_x,topy*(1-2/20),{'Tote pro Tag' 'pro 100000 Einw.'})
+legcnt=legcnt+1;Legend{legcnt}=['letzter: ' datestr(TCN(1,end))];
 else
 legcnt=legcnt+1;Legend{legcnt}='days';
-text(max(ACN(:))/20-5*textoffset_x,max(ICN(:))*(1-1/20),{'death per day' 'per 100000 inh.'})
+text(max(ACN(:))/20-5*textoffset_x,topy*(1-2/20),{'death per day' 'per 100000 inh.'})
+legcnt=legcnt+1;Legend{legcnt}=['last: ' datestr(TCN(1,end))];
 end
-legcnt=legcnt+1;Legend{legcnt}=datestr(TCN(1,end));
-text(repmat(max(ACN(:))/20,1,numel(DDN_ano))+5*textoffset_x,max(ICN(:))*(1-1/20-1/30-(1:numel(DDN_ano))/30),num2str(DDN_ano(:)))
+text(repmat(max(ACN(:))/20,1,numel(DDN_ano))+5*textoffset_x,topy*(1-2/20-1/30-(1:numel(DDN_ano))/30),num2str(DDN_ano(:)))
 
 % bubble line and country text
 for qq = 1:size(ACN,1)
@@ -364,12 +370,19 @@ else
 end
 dim = [.025 .02 .975 .035];
 str = {'data provided by Johns Hopkins University Center for Systems Science and Engineering (JHU CSSE): https://systems.jhu.edu/'...
-       'per GitHub: https://github.com/CSSEGISandData/COVID-19, presentation: Marcus Schwenk (2020)'}
+       'per GitHub: https://github.com/CSSEGISandData/COVID-19, presentation: Marcus Schwenk (2020)'};
 ant = annotation('textbox',dim,'String',str,'FitBoxToText','on','LineStyle','none');
 ant.FontSize = 8;
 
 % align boundaries
-xl=xlim;yl=ylim;xlim([-10 ceil(max(xl)/100)*100]);ylim([-0.5 ceil(max(yl)/10)*10]);
+xl=xlim;yl=ylim;xlim([-10 ceil(max(xl)/100)*100]);
+
+ylim([-0.5 topy]);
+if (exist('publish_figure_on_schwenk_elektronik')==2)
+publish_figure_on_schwenk_elektronik(9,'CovidDynamik.jpg')
+end
+
+%%
 
 %% collect states
 function [new_cntry, new_cases] = collect_states(CntryList,Cases,Cntry_Name)
