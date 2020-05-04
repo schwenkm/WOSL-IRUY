@@ -56,9 +56,9 @@ lineh=[];
 %%
 EUList = {'Austria','Belgium','Bulgaria','Croatia','Cyprus','Czechia','Denmark','Estonia','Finland','France','Germany','Greece','Hungary','Ireland','Italy','Latvia','Lithuania','Luxembourg','Malta','Netherlands','Poland','Portugal','Romania','Slovakia','Slovenia','Spain','Sweden',};
 CList1 = {'EU' 'Italy','Germany','France','China','US','Korea, South'};
-CList2 = cntry(find(max(cases')>30000))';   % mind 30k infizierte
+CList2 = cntry(find(max(cases')>50000))';   % mind 50k infizierte
 if url_idx==2
-   CList2 = cntry(find(max(cases')>2400))'; % mind 2400 tote
+   CList2 = cntry(find(max(cases')>3300))'; % mind 3300 tote
 end
 CList = unique({CList1{:} CList2{:}});
 figure(1), hold off
@@ -99,14 +99,15 @@ for pp = 1:numel(CList)
                  sum_spain=round(case_sum(end));
    elseif isequal(CList{pp},'Italy')
       cl='b.-';  sum_italy=round(case_sum(end));
-      dt=6; if url_idx==2; dt=12; end
+      dt=7; if url_idx==2; dt=12; end
    elseif isequal(CList{pp},'China') 
       dt=46;     cntry_short='Chn';
       if url_idx==2; dt=53; end
 %    elseif isequal(CList{pp},'Korea, South') 
 %       f=2;       cntry_short='SK';
 %       dt=15; % if url_idx==2; dt=13; end
-   elseif isequal(CList{pp},'United Kingdom') 
+   elseif isequal(CList{pp},'United Kingdom')
+                 sum_uk=round(case_sum(end));
                  cntry_long='UK';
    end
    %plot(ti,case_sum,cl); grid on; hold all
@@ -244,14 +245,15 @@ end
 if ~do_diff
    idx=idx+1;
    fname=sprintf('corona_%02d_heute', idx);
-   set(gca,'xlim',datetime('today')+[-20 10])
+   max_proj_days = 7;
+   set(gca,'xlim',datetime('today')+[-28-1 max_proj_days]) % -28 bis +7 Tage
    %set(gca,'ylim',[0 max([sum_ger*2 sum_fr sum_us])])
-   set(gca,'ylim',[0 max([sum_ger*2 sum_fr sum_spain sum_italy])])
+   set(gca,'ylim',[0 max([sum_ger*2 1.1*[sum_fr sum_spain sum_italy sum_uk]])])
    xxx=xlim; xx1=(ti(end)-xxx(1));
-   if min_dt < 10
-        xlabel(sprintf('vergangene %d Tage, und projizierte %d bis %d Tage', days(xx1), min_dt, 10));
+   if min_dt < max_proj_days
+        xlabel(sprintf('vergangene %d Tage, und projizierte %d bis %d Tage', days(xx1), min_dt, max_proj_days));
    else
-        xlabel(sprintf('vergangene %d Tage, und projizierte %d Tage', days(xx1), 10));
+        xlabel(sprintf('vergangene %d Tage, und projizierte %d Tage', days(xx1), max_proj_days));
    end
    t3.String='(Ausschnitt-Darstellung)';
    screenprint(fullfile(img_dir,[fname '_zoom']),gcf,100,'ImageModTime',datenum(ti(end)))
