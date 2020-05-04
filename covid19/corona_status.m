@@ -95,8 +95,10 @@ for pp = 1:numel(CList)
       cl='g.-';  sum_fr=round(case_sum(end));
    elseif isequal(CList{pp},'US')
       cl='co-';  sum_us=round(case_sum(end));
+   elseif isequal(CList{pp},'Spain')
+                 sum_spain=round(case_sum(end));
    elseif isequal(CList{pp},'Italy')
-      cl='b.-';
+      cl='b.-';  sum_italy=round(case_sum(end));
       dt=6; if url_idx==2; dt=12; end
    elseif isequal(CList{pp},'China') 
       dt=46;     cntry_short='Chn';
@@ -243,7 +245,8 @@ if ~do_diff
    idx=idx+1;
    fname=sprintf('corona_%02d_heute', idx);
    set(gca,'xlim',datetime('today')+[-20 10])
-   set(gca,'ylim',[0 max([sum_ger*2 sum_fr sum_us])])
+   %set(gca,'ylim',[0 max([sum_ger*2 sum_fr sum_us])])
+   set(gca,'ylim',[0 max([sum_ger*2 sum_fr sum_spain sum_italy])])
    xxx=xlim; xx1=(ti(end)-xxx(1));
    if min_dt < 10
         xlabel(sprintf('vergangene %d Tage, und projizierte %d bis %d Tage', days(xx1), min_dt, 10));
