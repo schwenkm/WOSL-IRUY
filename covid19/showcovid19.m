@@ -12,8 +12,8 @@ dwn_filename     = websave(dwn_filename,url);
 dwn_filename_rec = websave(dwn_filename_rec,url_rec);
 dwn_filename_dea = websave(dwn_filename_dea,url_dea);
 
-PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total','Czechia','Singapore','Taiwan*'};
-PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327      10.6          5.6       23.8] * 1e6;
+PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total','Czechia','Singapore','Taiwan*','Netherlands '};
+PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327      10.6          5.6       23.8        17.3] * 1e6;
 
 %%
 LANG = 'DE';
@@ -22,25 +22,25 @@ Measures ={...
             'Germany','16-Mar-2020','allgemeine Schließungen','-';...
             'Germany','22-Mar-2020','Kontaktverbot','-';...
             'Germany','15-Apr-2020','kleine Geschäfte öffnen','+';...
-            'Germany', '3-May-2020','teilweise Schulbetrieb','+';...
+            'Germany', '4-May-2020','teilweise Schulbetrieb','+';...
     };
 
 %%
-A       = readtable(dwn_filename);
+A       = readtable(dwn_filename,'Format','auto');
 ti      = datetime(A{1,5:end},'InputFormat','MM/dd/yy');
 cntry   = A{2:end,2};
 region  = A{2:end,1};
 state   = A{2:end,1};
 cases   = str2double(A{2:end,5:end});
 %
-A_rec       = readtable(dwn_filename_rec);
+A_rec       = readtable(dwn_filename_rec,'Format','auto');
 ti_rec      = datetime(A_rec{1,5:end},'InputFormat','MM/dd/yy');
 cntry_rec   = A_rec{2:end,2};
 region_rec  = A_rec{2:end,1};
 state_rec   = A_rec{2:end,1};
 recovered   = str2double(A_rec{2:end,5:end});
 %
-A_dea       = readtable(dwn_filename_dea);
+A_dea       = readtable(dwn_filename_dea,'Format','auto');
 ti_dea      = datetime(A_dea{1,5:end},'InputFormat','MM/dd/yy');
 cntry_dea   = A_dea{2:end,2};
 region_dea  = A_dea{2:end,1};
@@ -55,14 +55,18 @@ assert(all(ti==ti_dea))
 [cntry, cases] = collect_states(cntry,cases,'France');
 [cntry, cases] = collect_states(cntry,cases,'China');
 [cntry, cases] = collect_region(cntry,region,cases,'China','Hubei');
+[cntry, cases] = collect_region(cntry,region,cases,'Netherlands','');
 [cntry_rec, recovered] = collect_states(cntry_rec,recovered,'US');
 [cntry_rec, recovered] = collect_states(cntry_rec,recovered,'France');
 [cntry_rec, recovered] = collect_states(cntry_rec,recovered,'China');
 [cntry_rec, recovered] = collect_region(cntry_rec,region_rec,recovered,'China','Hubei');
+[cntry_rec, recovered] = collect_region(cntry_rec,region_rec,recovered,'Netherlands','');
 [cntry_dea, death] = collect_states(cntry_dea,death,'US');
 [cntry_dea, death] = collect_states(cntry_dea,death,'France');
 [cntry_dea, death] = collect_states(cntry_dea,death,'China');
 [cntry_dea, death] = collect_region(cntry_dea,region_dea,death,'China','Hubei');
+[cntry_dea, death] = collect_region(cntry_dea,region_dea,death,'Netherlands','');
+
 
 %%
 if (0) % skip others
@@ -261,7 +265,7 @@ xlabel('active')
 ylabel('increase')
 end % skip others
 %% bubble + active cases vs increase normed to population size (phase state diagram)
-CList ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total','Singapore'};
+CList ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total','Singapore','Netherlands '};
 %CList ={'Germany'}
 figure(9), close gcf;
 hf9 = figure(9); hold off
@@ -403,6 +407,11 @@ function [new_cntry, new_cases] = collect_region(CntryList,Region,Cases,Cntry_Na
     newidx = numel(CntryList) +1;
     collectCntry = Cntry_Name;
     icoll = find(strcmp(CntryList,collectCntry));
+    if(isempty(Region_Name))
+        ext='.';
+    else
+        ext='';
+    end
     new_cntry{newidx} = [collectCntry ' ' Region_Name];
     new_cases(newidx,:) = 0;
     for pp = icoll'
