@@ -12,8 +12,8 @@ dwn_filename     = websave(dwn_filename,url);
 dwn_filename_rec = websave(dwn_filename_rec,url_rec);
 dwn_filename_dea = websave(dwn_filename_dea,url_dea);
 
-PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total','Czechia','Singapore','Taiwan*','Netherlands '};
-PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327      10.6          5.6       23.8        17.3] * 1e6;
+PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total','Czechia','Singapore','Taiwan*','Netherlands ','United Kingdom '};
+PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327      10.6          5.6       23.8        17.3            67] * 1e6;
 
 %%
 LANG = 'DE';
@@ -56,16 +56,19 @@ assert(all(ti==ti_dea))
 [cntry, cases] = collect_states(cntry,cases,'China');
 [cntry, cases] = collect_region(cntry,region,cases,'China','Hubei');
 [cntry, cases] = collect_region(cntry,region,cases,'Netherlands','');
+[cntry, cases] = collect_region(cntry,region,cases,'United Kingdom','');
 [cntry_rec, recovered] = collect_states(cntry_rec,recovered,'US');
 [cntry_rec, recovered] = collect_states(cntry_rec,recovered,'France');
 [cntry_rec, recovered] = collect_states(cntry_rec,recovered,'China');
 [cntry_rec, recovered] = collect_region(cntry_rec,region_rec,recovered,'China','Hubei');
 [cntry_rec, recovered] = collect_region(cntry_rec,region_rec,recovered,'Netherlands','');
+[cntry_rec, recovered] = collect_region(cntry_rec,region_rec,recovered,'United Kingdom','');
 [cntry_dea, death] = collect_states(cntry_dea,death,'US');
 [cntry_dea, death] = collect_states(cntry_dea,death,'France');
 [cntry_dea, death] = collect_states(cntry_dea,death,'China');
 [cntry_dea, death] = collect_region(cntry_dea,region_dea,death,'China','Hubei');
 [cntry_dea, death] = collect_region(cntry_dea,region_dea,death,'Netherlands','');
+[cntry_dea, death] = collect_region(cntry_dea,region_dea,death,'United Kingdom','');
 
 
 %%
@@ -265,8 +268,8 @@ xlabel('active')
 ylabel('increase')
 end % skip others
 %% bubble + active cases vs increase normed to population size (phase state diagram)
-CList ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total','Singapore','Netherlands '};
-%CList ={'Germany'}
+CList ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total','Singapore','Netherlands ','United Kingdom '};
+%CList ={'Germany'} 
 figure(9), close gcf;
 hf9 = figure(9); hold off
 hf9.Position = [50 -200 1200 800];
@@ -329,7 +332,7 @@ text(repmat(max(ACN(:))/20,1,numel(DDN_ano))+5*textoffset_x,topy*(1-2/20-1/30-(1
 for qq = 1:size(ACN,1)
     scatter(ACN(qq,:),ICN(qq,:),2+100*DDN(qq,:),col(qq,:),'HandleVisibility','off');
     scatter(ACN(qq,end),ICN(qq,end),2+100*DDN(qq,end),col(qq,:),'filled','HandleVisibility','off');
-    text(ACN(qq,end)+textoffset_x,ICN(qq,end)+textoffset_y,CNT(qq));
+    hcnt_txt(qq) = text(ACN(qq,end)+textoffset_x,ICN(qq,end)+textoffset_y,CNT(qq));
 end
 % max death rate
 [qq,pp] = ind2sub(size(DDN),find(DDN == max(DDN(:))));
@@ -358,6 +361,17 @@ for qq = 1:size(ACN,1)
     scatter(ACN(qq,:),ICN(qq,:),1+100*DDN(qq,:),col(qq,:));
 end
 
+% put text on top
+hchilds= get(gca,'Children');
+hchilds_start = [];hchilds_end = [];
+for oo = 1:numel(hchilds)
+if ~isempty(find(hchilds(oo) == hcnt_txt(:)))
+    hchilds_start = [hchilds_start;hchilds(oo)];
+else
+    hchilds_end = [hchilds_end;hchilds(oo)];
+end
+end
+set(gca,'Children',[hchilds_start;hchilds_end]);
 % plot documentation
 legend(Legend,'location','northeastoutside');
 grid on
@@ -383,7 +397,7 @@ xl=xlim;yl=ylim;xlim([-10 ceil(max(xl)/100)*100]);
 
 ylim([-0.5 topy]);
 if (exist('publish_figure_on_schwenk_elektronik')==2)
-publish_figure_on_schwenk_elektronik(9,'CovidDynamik.jpg')
+publish_figure_on_schwenk_elektronik(9,'CovidDynamik')
 end
 
 %%
