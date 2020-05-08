@@ -26,21 +26,34 @@ Measures ={...
     };
 
 %%
+if verLessThan('matlab','9.8')
+A       = readtable(dwn_filename);
+else
 A       = readtable(dwn_filename,'Format','auto');
+end
 ti      = datetime(A{1,5:end},'InputFormat','MM/dd/yy');
 cntry   = A{2:end,2};
 region  = A{2:end,1};
 state   = A{2:end,1};
 cases   = str2double(A{2:end,5:end});
 %
+
+if verLessThan('matlab','9.8')
+A_rec       = readtable(dwn_filename_rec);
+else
 A_rec       = readtable(dwn_filename_rec,'Format','auto');
+end
 ti_rec      = datetime(A_rec{1,5:end},'InputFormat','MM/dd/yy');
 cntry_rec   = A_rec{2:end,2};
 region_rec  = A_rec{2:end,1};
 state_rec   = A_rec{2:end,1};
 recovered   = str2double(A_rec{2:end,5:end});
 %
+if verLessThan('matlab','9.8')
+A_dea       = readtable(dwn_filename_dea);
+else
 A_dea       = readtable(dwn_filename_dea,'Format','auto');
+end
 ti_dea      = datetime(A_dea{1,5:end},'InputFormat','MM/dd/yy');
 cntry_dea   = A_dea{2:end,2};
 region_dea  = A_dea{2:end,1};
