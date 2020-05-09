@@ -15,7 +15,7 @@ for url_idx=1:2
    end
    
 for do_diff = 0:2
-do_mav  = 2*do_diff + 2*url_idx - 1;
+do_mav  = 7; %old: 2*do_diff + 2*url_idx - 1;
 if do_diff==2; do_mav = 14; end
 %%
 if ~exist('dwn_url','var') || ~isequal(dwn_url, url) || ~isequal(dwn_date,date)
