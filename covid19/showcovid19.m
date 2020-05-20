@@ -22,7 +22,9 @@ Measures ={...
             'Germany','16-Mar-2020','allgemeine Schließungen','-';...
             'Germany','22-Mar-2020','Kontaktverbot','-';...
             'Germany','15-Apr-2020','kleine Geschäfte öffnen','+';...
-            'Germany', '4-May-2020','teilweise Schulbetrieb','+';...
+            'Germany','29-Apr-2020','Maskenpflicht beim Einkaufen, ÖPNV','-';...
+            'Germany', '4-May-2020','teilweise Schulbetrieb, Friseure öffnen','+';...
+            'Germany','15-May-2020','Sport im Freien','+';...
     };
 
 %%
@@ -268,8 +270,10 @@ xlabel('active')
 ylabel('increase')
 end % skip others
 %% bubble + active cases vs increase normed to population size (phase state diagram)
-CList ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total','Singapore','Netherlands ','United Kingdom '};
-%CList ={'Germany'} 
+CLists{2} ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total','Singapore','Netherlands ','United Kingdom '};
+CLists{1} ={'Germany'} 
+for clx = 1:numel(CLists)
+    CList = CLists{clx};
 figure(9), close gcf;
 hf9 = figure(9); hold off
 hf9.Position = [50 -200 1200 800];
@@ -290,9 +294,9 @@ for pp = 1:numel(CList)
     increase_n = increase_f / PopCountList(norm_idx) * 100000;
     active_n = active_f / PopCountList(norm_idx) * 100000;
     death_diff_n = death_diff_f / PopCountList(norm_idx) * 100000;
-    sel = 1:(numel(active_n)-0);
+    sel = 1:(numel(active_n)-2);
     % plot line, defining country color 
-    hp = plot(active_n(sel),increase_n(sel),'-','LineWidth',1.5,'HandleVisibility','off');
+    hp(cnt) = plot(active_n(sel),increase_n(sel),'-','LineWidth',1.5,'HandleVisibility','off');
     hold all
     
     % store date for annotation ...
@@ -300,10 +304,12 @@ for pp = 1:numel(CList)
     ICN(cnt,:) = increase_n(sel)';
     TCN(cnt,:) = ti(sel)';
     DDN(cnt,:) = death_diff_n(sel)';
-    col(cnt,:) = hp.Color;
+    col(cnt,:) = hp(cnt).Color;
     CNT{cnt}   = CList{pp};
-end
 
+end
+    Tmax = max(ti(:));
+    
 textoffset_x = 1;
 textoffset_y = 0;
 
@@ -311,54 +317,57 @@ legcnt=0;clear Legend;
 
 %
 topy=ceil(max(ICN(:))/10)*10;
-text(max(ACN(:))/20-5*textoffset_x,topy*(1-1/40),['Daten: ' datestr(min(TCN(:))) ' bis ' datestr(max(TCN(:)))])
+ht0=text(max(ACN(:))/20-5*textoffset_x,topy*(1-1/40),['Daten: ' datestr(min(TCN(:))) ' bis ' datestr(Tmax) ', dargestellt 7 Tage-Mittelwerte bis ' datestr(max(TCN(:)))])
 
 % death rate circles annotation, days and end date legend entry
 DDN_ano = [2 1 0.1 0.01];
-scatter(repmat(max(ACN(:))/20,1,numel(DDN_ano)),topy*(1-2/20-1/30-(1:numel(DDN_ano))/30),2+100*DDN_ano,'k');
+hs0=scatter(repmat(max(ACN(:))/20,1,numel(DDN_ano)),topy*(1-2/20-1/30-(1:numel(DDN_ano))/30),2+100*DDN_ano,'k');
 scatter(0,0,1,'k','filled');
 if LANG == 'DE'
 legcnt=legcnt+1;Legend{legcnt}='Tage';
-text(max(ACN(:))/20-5*textoffset_x,topy*(1-2/20),{'Tote pro Tag' 'pro 100000 Einw.'})
+ht1=text(max(ACN(:))/20-5*textoffset_x,topy*(1-2/20),{'Tote pro Tag' 'pro 100000 Einw.'})
 legcnt=legcnt+1;Legend{legcnt}=['letzter: ' datestr(TCN(1,end))];
 else
 legcnt=legcnt+1;Legend{legcnt}='days';
-text(max(ACN(:))/20-5*textoffset_x,topy*(1-2/20),{'death per day' 'per 100000 inh.'})
+ht1=text(max(ACN(:))/20-5*textoffset_x,topy*(1-2/20),{'death per day' 'per 100000 inh.'})
 legcnt=legcnt+1;Legend{legcnt}=['last: ' datestr(TCN(1,end))];
 end
-text(repmat(max(ACN(:))/20,1,numel(DDN_ano))+5*textoffset_x,topy*(1-2/20-1/30-(1:numel(DDN_ano))/30),num2str(DDN_ano(:)))
+ht2=text(repmat(max(ACN(:))/20,1,numel(DDN_ano))+5*textoffset_x,topy*(1-2/20-1/30-(1:numel(DDN_ano))/30),num2str(DDN_ano(:)))
 
 % bubble line and country text
+hs1=[];hs2=[];
 for qq = 1:size(ACN,1)
-    scatter(ACN(qq,:),ICN(qq,:),2+100*DDN(qq,:),col(qq,:),'HandleVisibility','off');
-    scatter(ACN(qq,end),ICN(qq,end),2+100*DDN(qq,end),col(qq,:),'filled','HandleVisibility','off');
+    hs1(qq) = scatter(ACN(qq,:),ICN(qq,:),2+100*DDN(qq,:),col(qq,:),'HandleVisibility','off');
+    hs2(qq) = scatter(ACN(qq,end),ICN(qq,end),2+100*DDN(qq,end),col(qq,:),'filled','HandleVisibility','off');
     hcnt_txt(qq) = text(ACN(qq,end)+textoffset_x,ICN(qq,end)+textoffset_y,CNT(qq));
 end
 % max death rate
 [qq,pp] = ind2sub(size(DDN),find(DDN == max(DDN(:))));
-scatter(ACN(qq,pp),ICN(qq,pp),2+100*DDN(qq,pp),col(qq,:),'HandleVisibility','off','LineWidth',1.5);
-text(ACN(qq,pp)+5*textoffset_x,ICN(qq,pp)+textoffset_y,[num2str(DDN(qq,pp),2) ]);
+hs3 = scatter(ACN(qq,pp),ICN(qq,pp),2+100*DDN(qq,pp),col(qq,:),'HandleVisibility','off','LineWidth',1.5);
+ht3 = text(ACN(qq,pp)+5*textoffset_x,ICN(qq,pp)+textoffset_y,[num2str(DDN(qq,pp),2) ]);
 
 
 
 % measures annotation and legend entries
+cnt_leg_ano = 0;
 for qq = 1:size(ACN,1)
     for pp = 1:size(Measures,1)
         if strcmp(Measures{pp,1},CNT(qq))% ={'Germany','11.3.2020','keine Großveranstalltungen','-'}
             idx = find(TCN(qq,:)==Measures{pp,2});
             if ~isempty(idx)
+                cnt_leg_ano=cnt_leg_ano +1;
                 legcnt=legcnt+1;Legend{legcnt}=[Measures{pp,2} ': ' Measures{pp,3}];
                 if strcmp(Measures{pp,4},'+')
-                    so=scatter(ACN(qq,idx),ICN(qq,idx),80,'d','filled','MarkerEdgeColor',col(qq,:),'MarkerFaceColor','g','LineWidth',1.5);
-                    so.MarkerFaceAlpha = 0.5;
+                    hs4(cnt_leg_ano)=scatter(ACN(qq,idx),ICN(qq,idx),80,'d','filled','MarkerEdgeColor',col(qq,:),'MarkerFaceColor','g','LineWidth',1.5);
+                    hs4(cnt_leg_ano).MarkerFaceAlpha = 0.5;
                 else
-                    so=scatter(ACN(qq,idx),ICN(qq,idx),80,'d','filled','MarkerEdgeColor',col(qq,:),'MarkerFaceColor','r','LineWidth',1.5);
-                    so.MarkerFaceAlpha = 0.5;
+                    hs4(cnt_leg_ano)=scatter(ACN(qq,idx),ICN(qq,idx),80,'d','filled','MarkerEdgeColor',col(qq,:),'MarkerFaceColor','r','LineWidth',1.5);
+                    hs4(cnt_leg_ano).MarkerFaceAlpha = 0.5;
                 end
             end
         end
     end
-    scatter(ACN(qq,:),ICN(qq,:),1+100*DDN(qq,:),col(qq,:));
+    %scatter(ACN(qq,:),ICN(qq,:),1+100*DDN(qq,:),col(qq,:));
 end
 
 % put text on top
@@ -394,10 +403,14 @@ ant.FontSize = 8;
 
 % align boundaries
 xl=xlim;yl=ylim;xlim([-10 ceil(max(xl)/100)*100]);
-
+%xlim([-10 200]);ylim([0 10])
 ylim([-0.5 topy]);
 if (exist('publish_figure_on_schwenk_elektronik')==2)
-publish_figure_on_schwenk_elektronik(9,'CovidDynamik')
+save_covid_diagrams(9,['CovidDynamik_' num2str(clx,1)])
+end
+end % cls
+if (exist('publish_figure_on_schwenk_elektronik')==2)
+publish_existing_schwenk_elektronik
 end
 
 %%
