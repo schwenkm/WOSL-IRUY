@@ -55,13 +55,14 @@ to_be_deleted=[];
 lineh=[];
 %%
 EUList = {'Austria','Belgium','Bulgaria','Croatia','Cyprus','Czechia','Denmark','Estonia','Finland','France','Germany','Greece','Hungary','Ireland','Italy','Latvia','Lithuania','Luxembourg','Malta','Netherlands','Poland','Portugal','Romania','Slovakia','Slovenia','Spain','Sweden',};
-CList1 = {'EU' 'Italy','Germany','France','China','US','Korea, South'};
-CList2 = cntry(find(max(cases')>50000))';   % mind 50k infizierte
+CList1 = {'EU' 'Italy','Germany','France','China','US','Indonesia'};
+CList2 = cntry(find(max(cases')>55000))';   % mind 55k infizierte
 if url_idx==2
    CList2 = cntry(find(max(cases')>3300))'; % mind 3300 tote
 end
 CList = unique({CList1{:} CList2{:}});
 figure(1), hold off
+pos = get(gcf,'position'); pos(2)=pos(2)-(500-pos(4)); pos(3:4)=[800 500]; set(gcf,'position',pos)
 cnt = 0;
 min_dt = inf;
 for pp = 1:numel(CList)
@@ -154,7 +155,8 @@ for ci=1:cnt
    DatY_end(ci) = DatY{ci}(end);
 end
 legend(Legend,'Location','northwest');
-set(gcf,'position',[230,200,700,420])
+% done above: pos = [230,200,800,500]; set(gcf,'position',pos)
+
 %% Add extra Legend at right to reflect right most order with colors
 xx=max(get(gca,'XLim')) + diff(get(gca,'XLim'))/100;
 yy=max(get(gca,'YLim'));
@@ -162,9 +164,9 @@ yy=max(get(gca,'YLim'));
 for ci=[-1 ci_sort]
    if ci==-1
       set(text(xx,yy,'Order:'),'Units','pixels'); % do not change on Zoom
-      yy = yy - diff(get(gca,'YLim'))/40;
+      yy = yy - diff(get(gca,'YLim'))*10/pos(4);
    elseif ~contains(Legend{ci},' ago')
-      yy = yy - diff(get(gca,'YLim'))/20;
+      yy = yy - diff(get(gca,'YLim'))*21/pos(4);
       legNoSp = Legend{ci}; legNoSp(find(legNoSp==' '):end)='';
       legh(ci)=text(xx,yy,legNoSp,'Color',get(lineh(ci),'Color'));
       set(legh(ci),'Units','pixels'); % do not change on Zoom
