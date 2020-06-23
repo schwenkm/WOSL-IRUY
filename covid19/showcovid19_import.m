@@ -26,7 +26,6 @@ Measures ={...
             'Germany', '4-May-2020','teilweise Schulbetrieb, Friseure öffnen','+';...
             'Germany','15-May-2020','Sport im Freien','+';...
             'Germany','1-Jun-2020' ,'BW: Veranstaltungen bis 100 Gäste','+';...
-            'Germany','16-Jun-2020' ,'Start der Corona Warn App','+';...
     };
 
 %%
@@ -304,7 +303,6 @@ for pp = 1:numel(CList)
     cases_f = filtfilt(filtercoef,1,cases(i1,:));
     active_f = filtfilt(filtercoef,1,active);
     death_diff_f = filtfilt(filtercoef,1,[0 diff(death(i1_dea,:))]); % fill with 0 at index 1
-  
     increase_f = [0 diff(cases_f)]; % fill with 0 at index 1
   
     increase_n = increase_f / PopCountList(norm_idx) * 100000;
@@ -429,11 +427,6 @@ if (exist('publish_figure_on_schwenk_elektronik')==2)
 save_covid_diagrams(9,['CovidDynamik_' num2str(clx,1)])
 end
 end % cls
-if (exist('publish_figure_on_schwenk_elektronik')==2)
-xl=xlim;yl=ylim;xlim([-1 ceil(max(xl)/10/10)*10]);
-ylim([-0.05 topy/10]);
-save_covid_diagrams(9,['CovidDynamik_3'])
-end
 if (exist('publish_figure_on_schwenk_elektronik')==2)
 publish_existing_schwenk_elektronik
 end
