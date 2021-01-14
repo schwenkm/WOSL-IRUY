@@ -3,17 +3,20 @@
 url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv';
 url_rec = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv';
 url_dea = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv';
-
+url_GER_R = 'https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Projekte_RKI/Nowcasting_Zahlen.xlsx?__blob=publicationFile';
 dwn_filename     = [tempdir 'c.csv'];
 dwn_filename_rec = [tempdir 'cr.csv'];
 dwn_filename_dea = [tempdir 'de.csv'];
+dwn_filename_GER_R = [tempdir 'GE_R.xlsx'];
 
 dwn_filename     = websave(dwn_filename,url);
 dwn_filename_rec = websave(dwn_filename_rec,url_rec);
 dwn_filename_dea = websave(dwn_filename_dea,url_dea);
+dwn_filename_ger = websave(dwn_filename_GER_R,url_GER_R);
 
-PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total','Czechia','Singapore','Taiwan*','Netherlands ','United Kingdom '};
-PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327      10.6          5.6       23.8        17.3            67] * 1e6;
+
+PopCntryList = {'Germany','France total','Italy','China total','China Hubei','Spain','Norway','Sweden','Korea, South','US total','Czechia','Singapore','Taiwan*','Netherlands ','United Kingdom ','Croatia'};
+PopCountList = [    80         67           60         1400        58        50       5.4     10.2       51.2           327      10.6          5.6       23.8        17.3            67                4    ] * 1e6;
 
 %%
 LANG = 'DE';
@@ -27,7 +30,34 @@ Measures ={...
             'Germany','15-May-2020','Sport im Freien','+';...
             'Germany','1-Jun-2020' ,'BW: Veranstaltungen bis 100 Gäste','+';...
             'Germany','16-Jun-2020' ,'Start der Corona Warn App','+';...
-    };
+            'Germany','1-Jul-2020'  ,'BW: Veranstaltungen bis 250 Gäste','+';...
+            'Germany','15-Jul-2020' ,'Mallorca schließt Lokale','-';... 
+            'Germany','10-Oct-2020' ,'Maskenpflicht in einzelnen Bereichen','-';...   
+            'Germany','14-Oct-2020' ,'Feiern nur noch in kleinen Gruppen','-';...  
+            'Germany','2-Nov-2020'  ,'Gaststätten und Theater schließen','-';...   
+            'Germany','25-Nov-2020' ,'Apell Kontakte weiter zu reduzieren','-';...   
+            'Germany','1-Dec-2020'  ,'Treffen begrenzt auf 5 Personen','-';...   
+            'United Kingdom ','2-Dec-2020' ,'Biontec Impfstoff zugelassen','+';...   
+            'Germany','1-Dec-2020'  ,'Treffen begrenzt auf 5 Personen','-';...   
+            'United Kingdom ','8-Dec-2020' ,'erste Impfungen','+';...  
+            'Germany','8-Dec-2020'  ,'Ausgangssperren in einzelnen Landkreisen','-';...   
+            'Germany','12-Dec-2020'  ,'BW: allgemeine Ausgangssperre','-';...   
+            'US total','14-Dec-2020'  ,'Impfungen mit Biontec','+';... 
+            'Germany','16-Dec-2020'  ,'Geschäfte und Schulen schließen','-';...
+            'US total','21-Dec-2020'  ,'Impfungen mit Moderna','+';...
+            'Germany','24-Dec-2020' ,'Lockerungen für die Feiertage','+';...
+            'France total','27-Dec-2020'  ,'Impfungen mit Biontec','+';...
+            'Germany','27-Dec-2020'  ,'Impfungen mit Biontec','+';...
+            'Italy','27-Dec-2020'  ,'Impfungen mit Biontec','+';...
+            'Spain','27-Dec-2020'  ,'Impfungen mit Biontec','+';...
+            'Czechia','27-Dec-2020'  ,'Impfungen mit Biontec','+';...
+            'Croatia','27-Dec-2020'  ,'Impfungen mit Biontec','+';...
+            'Sweden','27-Dec-2020'  ,'Impfungen mit Biontec','+';...
+            'Netherlands ','27-Dec-2020'  ,'Impfungen mit Biontec','+';...
+            'Norway','27-Dec-2020'  ,'Impfungen mit Biontec','+';...
+            'Germany','11-Jan-2021' ,'Verschärfung d. Lockdown, nur Grundschulen offen','-';...
+            'Germany','7-Jan-2021' ,'zusätzlich Moderna Impfstoff in der EU','+';...
+               };
 
 %%
 if verLessThan('matlab','9.8')
@@ -67,6 +97,18 @@ death      = str2double(A_dea{2:end,5:end});
 assert(all(ti==ti_rec))
 assert(all(ti==ti_dea))
 
+% R values
+if verLessThan('matlab','9.8')
+Rger       = readtable(dwn_filename_ger);
+else
+Rger       = readtable(dwn_filename_ger,'Format','auto','Sheet','Nowcast_R');
+end
+ti_Rger      = Rger(:,1).Variables;
+Rger = Rger.Punktsch_tzerDes7_Tage_RWertes;
+%
+assert(all(ti==ti_rec))
+assert(all(ti==ti_dea))
+
 % collect states
 [cntry, cases] = collect_states(cntry,cases,'US');
 [cntry, cases] = collect_states(cntry,cases,'France');
@@ -87,211 +129,14 @@ assert(all(ti==ti_dea))
 [cntry_dea, death] = collect_region(cntry_dea,region_dea,death,'Netherlands','');
 [cntry_dea, death] = collect_region(cntry_dea,region_dea,death,'United Kingdom','');
 
-
-%%
-if (0) % skip others
-%% cases
-CList ={'Germany','France total','Italy','China total','Spain','Norway','Sweden','Korea, South','US total'};
-%CList ={'US total'};
-%CList ={'Germany','Italy','China'};
-
-figure(1), hold off
-cnt = 0;Legend=[];
-for pp = 1:numel(CList)
-    cnt = cnt+1;
-    i1 = find(strcmp(cntry,CList{pp}),1);
-    plot(ti,cases(i1,:),'.-');
-    Legend{cnt}=cntry{i1};
-    grid on
-    hold all
-end
-legend(Legend);
-title('total')
-set(gca,'YScale','log')
-xlabel('date')
-ylabel('confirmed cases')
-
-
-%% recovered
-figure(4), hold off
-cnt = 0;Legend=[];
-for pp = 1:numel(CList)
-    cnt = cnt+1;
-    i1 = find(strcmp(cntry_rec,CList{pp}),1);
-    plot(ti_rec,recovered(i1,:),'.-');
-    Legend{cnt}=cntry_rec{i1};
-    grid on
-    hold all
-end
-legend(Legend);
-set(gca,'YScale','log')
-title('recovered')
-xlabel('date')
-ylabel('confirmed cases')
-
-%% cases aligned
-alignat = 1000;
-aligncntry ={'Italy'};
-ial = find(strcmp(cntry,aligncntry),1);
-
-figure(2), hold off
-cnt = 0;Legend=[];
-for pp = 1:numel(CList)
-    cnt = cnt+1;
-    i1 = find(strcmp(cntry,CList{pp}),1);
-    i2 = find(cases(i1,:) >= alignat,1);
-    if (min(cases(i1,:)) <= alignat)
-        dural = (ti-ti(i2));
-    else
-        i2 = find(cases(ial,:) >= alignat,1);
-        i3 = find(cases(ial,:) >= min(cases(i1,:)),1);
-        i4 = find(cases(i1,:) >= min(cases(i1,:)),1);
-        dural = (ti-ti(i4)) + (ti(i3)-ti(i2));
-    end
-    plot(dural,cases(i1,:),'.-');
-    Legend{cnt}=cntry{i1};
-    grid on
-    hold all
-end
-plot(duration(days(0)), alignat,'mo','MarkerSize',12);
-Legend{cnt+1}='alignment';
-
-legend(Legend);
-set(gca,'YScale','log')
-xlabel('days')
-ylabel('confirmed cases')
-xtickformat('d')
-%% new vs. cases 
-CList ={'Germany','France total','Italy','China total','Spain','US total'};
-
-daily_new = diff(cases,1,2);
-figure(3), hold off
-cnt = 0;Legend=[];
-for pp = 1:numel(CList)
-    cnt = cnt+1;
-    i1 = find(strcmp(cntry,CList{pp}),1);
-    plot(cases(i1,2:end),daily_new(i1,:),'.-');
-    Legend{cnt}=cntry{i1};
-    grid on
-    hold all
-end
-
-legend(Legend,'Location','NorthWest');
-set(gca,'YScale','log')
-set(gca,'XScale','log')
-ylabel('new cases')
-xlabel('confirmed cases')
-
-%% active cases 
-figure(5), hold off
-cnt = 0;Legend=[];
-for pp = 1:numel(CList)
-    cnt = cnt+1;
-    i1     = find(strcmp(cntry,CList{pp}),1);
-    i1_rec = find(strcmp(cntry_rec,CList{pp}),1);
-    i1_dea = find(strcmp(cntry_dea,CList{pp}),1);    
-    active = cases(i1,:) - recovered(i1_rec,:) - death(i1_dea,:);
-    plot(ti,active,'.-');
-    Legend{cnt}=cntry{i1};
-    grid on
-    hold all
-end
-legend(Legend);
-set(gca,'YScale','log')
-title('active')
-xlabel('time')
-ylabel('active')
-%% increase 
-figure(6), hold off
-cnt = 0;Legend=[];
-for pp = 1:numel(CList)
-    cnt = cnt+1;
-    i1     = find(strcmp(cntry,CList{pp}),1);
-    increase = diff(cases(i1,:));
-    plot(ti(1:(end-1)),increase,'.-');
-    Legend{cnt}=cntry{i1};
-    grid on
-    hold all
-end
-legend(Legend,'location','best');
-%set(gca,'YScale','log')
-title('increase')
-xlabel('time')
-ylabel('increase')
-%% active cases vs increase (state diagram)
-% CList ={'Germany','France total','Italy','China total','Spain','US total'};
-% figure(7), hold off
-% cnt = 0;Legend=[];
-% for pp = 1:numel(CList)
-%     cnt = cnt+1;
-%     i1     = find(strcmp(cntry,CList{pp}),1);
-%     i1_rec = find(strcmp(cntry_rec,CList{pp}),1);
-%     i1_dea = find(strcmp(cntry_dea,CList{pp}),1);    
-%     active = cases(i1,:) - recovered(i1_rec,:) - death(i1_dea,:);
-%     increase = diff(cases(i1,:));
-%     active = active(2:end);
-%     increase_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,increase);
-%     active_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,active);
-%     plot(active_f,increase_f,'.-');
-%     Legend{cnt}=cntry{i1};
-%     grid on
-%     hold all
-% end
-% legend(Legend);
-% %set(gca,'YScale','log')
-% %set(gca,'XScale','log')
-% title({'increase vs active','1 week average'})
-% xlabel('active')
-% ylabel('increase')
-%% active cases vs increase normed to population size (phase state diagram)
-CList ={'Germany','France total','Italy','China total','Spain','US total'};
-figure(8), hold off
-cnt = 0;clear Legend ACN ICN TCN;
-for pp = 1:numel(CList)
-    cnt = cnt+1;
-    norm_idx = find(strcmp(PopCntryList,CList{pp}),1);
-    i1     = find(strcmp(cntry,CList{pp}),1);    
-    i1_rec = find(strcmp(cntry_rec,CList{pp}),1);
-    i1_dea = find(strcmp(cntry_dea,CList{pp}),1);    
-    active = cases(i1,:) - recovered(i1_rec,:) - death(i1_dea,:);
-    increase = diff(cases(i1,:));
-    active = active(2:end);
-    increase_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,increase);
-    active_f = filtfilt([0.5 1 1 1 1 1 0.5]/7,1,active);
-    increase_n = increase_f / PopCountList(norm_idx) * 100000;
-    active_n = active_f / PopCountList(norm_idx) * 100000;
-    sel = 1:(numel(active_n)-2);
-    plot(active_n(sel),increase_n(sel),'.-');
-    Legend{cnt}=cntry{i1};
-    grid on
-    hold all
-    
-    ACN(cnt,:) = active_n(sel(1:14:end))';
-    ICN(cnt,:) = increase_n(sel(1:14:end))';
-    TCN(cnt,:) = ti(sel(1:14:end)+1)';
-end
-
-
-plot(ACN(:,(end-2)), ICN(:,(end-2)),'bd','MarkerSize',3); cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-2)));
-plot(ACN(:,(end-1)), ICN(:,(end-1)),'bo','MarkerSize',4); cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-1)));
-plot(ACN(:,(end-0)), ICN(:,(end-0)),'bs','MarkerSize',5); cnt=cnt+1;Legend{cnt}=datestr(TCN(1,(end-0)));
-    
-
-legend(Legend);
-%set(gca,'YScale','log')
-%set(gca,'XScale','log')
-title({'Covid19, increase of total cases vs active cases','per 100000 inhabitants - 1 week average'})
-xlabel('active')
-ylabel('increase')
-end % skip others
 %% bubble + active cases vs increase normed to population size (phase state diagram)
-CLists{2} ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total','Singapore','Netherlands ','United Kingdom '};
-CLists{1} ={'Germany'} 
+CLists{2} ={'Germany','France total','Italy','China Hubei','Spain','Sweden','Norway','Czechia','US total','Singapore','Netherlands ','United Kingdom ','Croatia'};
+CLists{1} ={'Germany'} ;
 for clx = 1:numel(CLists)
     CList = CLists{clx};
 figure(9), close gcf;
 hf9 = figure(9); hold off
-hf9.Position = [50 -200 1200 800];
+hf9.Position = [50 0 1200 800];
 cnt = 0;clear ACN ICN TCN DDN;
 for pp = 1:numel(CList)
     cnt = cnt+1;
@@ -300,17 +145,38 @@ for pp = 1:numel(CList)
     i1_rec = find(strcmp(cntry_rec,CList{pp}),1);
     i1_dea = find(strcmp(cntry_dea,CList{pp}),1);    
     active = cases(i1,:) - recovered(i1_rec,:) - death(i1_dea,:);
-    filtercoef=[1 1 1 1 1 1 1]/7;
-    cases_f = filtfilt(filtercoef,1,cases(i1,:));
-    active_f = filtfilt(filtercoef,1,active);
-    death_diff_f = filtfilt(filtercoef,1,[0 diff(death(i1_dea,:))]); % fill with 0 at index 1
-  
-    increase_f = [0 diff(cases_f)]; % fill with 0 at index 1
-  
+    increase = [0 diff(cases(i1,:))]; % fill with 0 at index 1
+    SEL_FILTER  = 1;
+    if (SEL_FILTER == 1)
+        Nf = 7;
+        filtercoef=ones(Nf,1)/Nf;
+        cases_f = filtfilt(filtercoef,1,[cases(i1,:) cases(i1,(end-1):-1:(end-1-Nf+1))]); % append mirrored signal to improve filtfilt etrapolation
+        active_f = filtfilt(filtercoef,1,[active active((end-1):-1:(end-1-Nf+1))]);
+        deadiff = [0  diff(death(i1_dea,:))];
+        death_diff_f = filtfilt(filtercoef,1,[deadiff  deadiff((end-1):-1:(end-1-Nf+1))]); % fill with 0 at index 1
+        increase_f = filtfilt(filtercoef,1,[increase increase((end-1):-1:(end-1-Nf+1))]); % fill with 0 at index 1
+        cases_f = cases_f(1:(end-Nf)); % remove mirrored
+        active_f = active_f(1:(end-Nf));
+        death_diff_f = death_diff_f(1:(end-Nf));
+        increase_f = increase_f(1:(end-Nf));
+    elseif (SEL_FILTER == 2)
+%     filtercoef=[4 5 6 7 6 5 4];
+% %     filtercoef=ones(10,1);
+%     filtercoef=filtercoef/sum(filtercoef);
+% %     filtercoef=1
+        filtercoef=[1 1 1 1 1 1 1]/7;
+        cases_f = filter(filtercoef,1,cases(i1,:));
+        active_f = filter(filtercoef,1,active);
+        death_diff_f = filter(filtercoef,1,[0 diff(death(i1_dea,:))]); % fill with 0 at index 1
+    end
+    %increase_f = [0 diff(cases_f)]; % fill with 0 at index 1
+
     increase_n = increase_f / PopCountList(norm_idx) * 100000;
     active_n = active_f / PopCountList(norm_idx) * 100000;
     death_diff_n = death_diff_f / PopCountList(norm_idx) * 100000;
-    sel = 1:(numel(active_n)-2);
+    sel = 1:(numel(active_n)-0);
+    %sel = 1:(numel(active_n));
+    
     % plot line, defining country color 
     hp(cnt) = plot(active_n(sel),increase_n(sel),'-','LineWidth',1.5,'HandleVisibility','off');
     hold all
@@ -336,7 +202,7 @@ legcnt=0;clear Legend;
 
 %
 topy=ceil(max(ICN(:))/10)*10;
-ht0=text(max(ACN(:))/20-5*textoffset_x,topy*(1-1/40),['Daten: ' datestr(min(TCN(:))) ' bis ' datestr(Tmax) ', dargestellt 7 Tage-Mittelwerte bis ' datestr(max(TCN(:)))])
+ht0=text(max(ACN(:))/20-5*textoffset_x,topy*(1-1/40),['Daten: ' datestr(min(TCN(:))) ' bis ' datestr(Tmax) ', dargestellt 7 Tage-Mittelwerte bis ' datestr(max(TCN(:)))]);
 
 % death rate circles annotation, days and end date legend entry
 DDN_ano = [2 1 0.1 0.01];
@@ -344,20 +210,20 @@ hs0=scatter(repmat(max(ACN(:))/20,1,numel(DDN_ano)),topy*(1-2/20-1/30-(1:numel(D
 scatter(0,0,1,'k','filled');
 if LANG == 'DE'
 legcnt=legcnt+1;Legend{legcnt}='Tage';
-ht1=text(max(ACN(:))/20-5*textoffset_x,topy*(1-2/20),{'Tote pro Tag' 'pro 100000 Einw.'})
+ht1=text(max(ACN(:))/20-5*textoffset_x,topy*(1-2/20),{'Tote pro Tag' 'pro 100000 Einw.'});
 legcnt=legcnt+1;Legend{legcnt}=['letzter: ' datestr(TCN(1,end))];
 else
 legcnt=legcnt+1;Legend{legcnt}='days';
-ht1=text(max(ACN(:))/20-5*textoffset_x,topy*(1-2/20),{'death per day' 'per 100000 inh.'})
+ht1=text(max(ACN(:))/20-5*textoffset_x,topy*(1-2/20),{'death per day' 'per 100000 inh.'});
 legcnt=legcnt+1;Legend{legcnt}=['last: ' datestr(TCN(1,end))];
 end
-ht2=text(repmat(max(ACN(:))/20,1,numel(DDN_ano))+5*textoffset_x,topy*(1-2/20-1/30-(1:numel(DDN_ano))/30),num2str(DDN_ano(:)))
+ht2=text(repmat(max(ACN(:))/20,1,numel(DDN_ano))+5*textoffset_x,topy*(1-2/20-1/30-(1:numel(DDN_ano))/30),num2str(DDN_ano(:)));
 
 % bubble line and country text
 hs1=[];hs2=[];
 for qq = 1:size(ACN,1)
-    hs1(qq) = scatter(ACN(qq,:),ICN(qq,:),2+100*DDN(qq,:),col(qq,:),'HandleVisibility','off');
-    hs2(qq) = scatter(ACN(qq,end),ICN(qq,end),2+100*DDN(qq,end),col(qq,:),'filled','HandleVisibility','off');
+    hs1{qq} = scatter(ACN(qq,:),ICN(qq,:),2+100*DDN(qq,:),col(qq,:),'HandleVisibility','off');
+    hs2{qq} = scatter(ACN(qq,end),ICN(qq,end),2+100*DDN(qq,end),col(qq,:),'filled','HandleVisibility','off');
     hcnt_txt(qq) = text(ACN(qq,end)+textoffset_x,ICN(qq,end)+textoffset_y,CNT(qq));
 end
 % max death rate
@@ -383,6 +249,7 @@ for qq = 1:size(ACN,1)
                     hs4(cnt_leg_ano)=scatter(ACN(qq,idx),ICN(qq,idx),80,'d','filled','MarkerEdgeColor',col(qq,:),'MarkerFaceColor','r','LineWidth',1.5);
                     hs4(cnt_leg_ano).MarkerFaceAlpha = 0.5;
                 end
+                ht31 = text(ACN(qq,idx)+5*textoffset_x,ICN(qq,idx)+textoffset_y,datestr(Measures{pp,2},'dd.mm.'),'FontSize',6);
             end
         end
     end
@@ -421,19 +288,52 @@ ant = annotation('textbox',dim,'String',str,'FitBoxToText','on','LineStyle','non
 ant.FontSize = 8;
 
 % align boundaries
-xl=xlim;yl=ylim;xlim([-10 ceil(max(xl)/100)*100]);
-%xlim([-10 200]);ylim([0 10])
+xl=xlim;yl=ylim;
+xlim([-10 ceil(max(xl)/100)*100]);
 ylim([-0.5 topy]);
-%xlim([1 1000]);ylim([0.1 100]);set(gca,'XScale','log');set(gca,'YScale','log');save_covid_diagrams(9,['CovidDynamik_3']);publish_existing_schwenk_elektronik
+
+if (clx == 1) % GER only
+    ADDCOLORSONR = 1;
+    if(ADDCOLORSONR == 1)
+    hs1{1}.CData = repmat([0 0.447 0.741],size(hs1{1}.XData,2),1);
+    cm = colormap('greenmiddle');
+    hp(1).Color=[0.7 0.7 0.7]
+    for iiti = 1:numel(ti_Rger)
+        
+        
+           xii = find(TCN == ti_Rger(iiti));
+           R = Rger(iiti);
+           if ~isnan(R)
+            colorindex = max([1 min([128 + round((R-1) * 128) 256])]);
+            acolor = cm(colorindex,:);
+           else
+               xii=[];
+
+           end
+           if ~isempty(xii)
+               hs1{1}.CData(xii,:) = acolor;  
+               if xii < (size(ACN,2)-1)
+                    plot([ACN(qq,xii) ACN(qq,xii+1)],[ICN(qq,xii) ICN(qq,xii+1)],'-','LineWidth',2.5,'HandleVisibility','off','Color',acolor);
+               end
+           end
+    end
+    hs1{1}.MarkerFaceColor = 'flat'
+    c = colorbar;
+    c.Label.String = 'RKI 7-Tage-R Wert';
+    caxis([0 2])
+    end
+end
 if (exist('publish_figure_on_schwenk_elektronik')==2)
 save_covid_diagrams(9,['CovidDynamik_' num2str(clx,1)])
 end
 end % cls
 if (exist('publish_figure_on_schwenk_elektronik')==2)
-xl=xlim;yl=ylim;xlim([-1 ceil(max(xl)/10/10)*10]);
-ylim([-0.05 topy/10]);
+xlim([-1 ceil(max(xl)/100)*33]);
+ylim([-0.05 topy/3]);
 save_covid_diagrams(9,['CovidDynamik_3'])
 end
+xlim([-10 ceil(max(xl)/100)*100]);
+ylim([-0.5 topy]);
 if (exist('publish_figure_on_schwenk_elektronik')==2)
 publish_existing_schwenk_elektronik
 end
